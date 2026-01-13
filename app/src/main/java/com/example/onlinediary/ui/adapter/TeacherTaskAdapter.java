@@ -10,6 +10,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -94,15 +95,17 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
         String iconUrl = buildIconUrl(task == null ? null : task.iconFileName);
         if (iconUrl != null) {
             holder.iconView.setColorFilter(null);
+            holder.iconView.setImageTintList(null);
             Glide.with(holder.itemView)
                     .load(buildGlideModel(holder.itemView.getContext(), iconUrl))
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .into(holder.iconView);
         } else {
             holder.iconView.setImageResource(android.R.drawable.ic_menu_gallery);
-            holder.iconView.setColorFilter(
-                    holder.itemView.getContext().getColor(R.color.schedule_muted)
-            );
+            holder.iconView.setImageTintList(ContextCompat.getColorStateList(
+                    holder.itemView.getContext(),
+                    R.color.schedule_muted
+            ));
         }
 
         holder.btnSubmissions.setOnClickListener(v -> listener.onSubmissions(task));
