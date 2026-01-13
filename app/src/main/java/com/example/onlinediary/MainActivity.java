@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         Button btnSchedule = findViewById(R.id.btnSchedule);
         Button btnHomework = findViewById(R.id.btnHomework);
         Button btnManageHomework = findViewById(R.id.btnManageHomework);
+        Button btnAdminStats = findViewById(R.id.btnAdminStats);
         Button btnUsers = findViewById(R.id.btnUsers);
         Button btnSubjects = findViewById(R.id.btnSubjects);
         Button btnScheduleAdmin = findViewById(R.id.btnScheduleAdmin);
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
 
         btnManageHomework.setVisibility(isTeacher || isAdmin ? android.view.View.VISIBLE : android.view.View.GONE);
+        btnAdminStats.setVisibility(isAdmin ? android.view.View.VISIBLE : android.view.View.GONE);
         btnUsers.setVisibility(isAdmin ? android.view.View.VISIBLE : android.view.View.GONE);
         btnSubjects.setVisibility(isAdmin ? android.view.View.VISIBLE : android.view.View.GONE);
         btnScheduleAdmin.setVisibility(isAdmin ? android.view.View.VISIBLE : android.view.View.GONE);
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         btnSchedule.setOnClickListener(v -> startActivity(new Intent(this, ScheduleActivity.class)));
         btnHomework.setOnClickListener(v -> startActivity(new Intent(this, HomeworkActivity.class)));
         btnManageHomework.setOnClickListener(v -> startActivity(new Intent(this, ManageHomeworkActivity.class)));
+        btnAdminStats.setOnClickListener(v -> startActivity(new Intent(this, AdminStatsActivity.class)));
         btnUsers.setOnClickListener(v -> startActivity(new Intent(this, UsersActivity.class)));
         btnSubjects.setOnClickListener(v -> startActivity(new Intent(this, SubjectsActivity.class)));
         btnScheduleAdmin.setOnClickListener(v -> startActivity(new Intent(this, ScheduleAdminActivity.class)));

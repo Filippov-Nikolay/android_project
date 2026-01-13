@@ -57,6 +57,9 @@
             android:name=".ScheduleAdminActivity"
             android:exported="false" />
         <activity
+            android:name=".AdminStatsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ScheduleEditActivity"
             android:exported="false" />
         <activity
