@@ -2,7 +2,6 @@ package com.example.onlinediary;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -27,6 +26,7 @@ import com.example.onlinediary.ui.adapter.ScheduleAdminAdapter;
 import com.example.onlinediary.util.MultipartUtils;
 import com.example.onlinediary.util.SimpleItemSelectedListener;
 import com.example.onlinediary.util.SimpleTextWatcher;
+import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,15 +65,7 @@ public class ScheduleAdminActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_admin);
-
-        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
-        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
-        int flags = getWindow().getDecorView().getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-        }
-        getWindow().getDecorView().setSystemUiVisibility(flags);
+        TopHeaderHelper.bind(this);
 
         progressBar = findViewById(R.id.scheduleAdminProgress);
         subtitleText = findViewById(R.id.scheduleAdminSubtitle);

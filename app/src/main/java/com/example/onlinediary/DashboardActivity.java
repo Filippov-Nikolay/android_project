@@ -3,7 +3,6 @@ package com.example.onlinediary;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -31,6 +30,7 @@ import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.DashboardNewsAdapter;
 import com.example.onlinediary.ui.adapter.DashboardRowAdapter;
 import com.example.onlinediary.util.BottomNavHelper;
+import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -42,7 +42,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class DashboardActivity extends AppCompatActivity {
-    private TextView avatarSmall;
     private TextView avatarLarge;
     private TextView greetingText;
     private TextView groupText;
@@ -71,17 +70,8 @@ public class DashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+        TopHeaderHelper.bind(this);
 
-        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
-        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
-        int flags = getWindow().getDecorView().getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-        }
-        getWindow().getDecorView().setSystemUiVisibility(flags);
-
-        avatarSmall = findViewById(R.id.dashboardAvatarSmall);
         avatarLarge = findViewById(R.id.dashboardAvatarLarge);
         greetingText = findViewById(R.id.dashboardGreeting);
         groupText = findViewById(R.id.dashboardGroup);
@@ -216,8 +206,8 @@ public class DashboardActivity extends AppCompatActivity {
                     groupText.setText(getGroupLabel(user.groupName));
 
                     String initials = buildInitials(first, last);
-                    avatarSmall.setText(initials);
                     avatarLarge.setText(initials);
+                    TopHeaderHelper.updateHeaderUser(DashboardActivity.this, user);
                 }
                 setLoading(pendingCalls > 0);
             }

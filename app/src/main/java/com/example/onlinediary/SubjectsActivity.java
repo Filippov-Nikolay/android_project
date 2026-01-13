@@ -2,7 +2,6 @@ package com.example.onlinediary;
 
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -25,6 +24,7 @@ import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.util.BottomNavHelper;
+import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,15 +66,7 @@ public class SubjectsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subjects);
-
-        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
-        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
-        int flags = getWindow().getDecorView().getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-        }
-        getWindow().getDecorView().setSystemUiVisibility(flags);
+        TopHeaderHelper.bind(this);
 
         groupsChipGroup = findViewById(R.id.groupsChipGroup);
         subjectsChipGroup = findViewById(R.id.subjectsChipGroup);
