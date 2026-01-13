@@ -104,13 +104,11 @@ public class HomeworkCreateActivity extends AppCompatActivity {
         Button btnPickIcon = findViewById(R.id.btnPickHomeworkIcon);
         Button btnCreate = findViewById(R.id.btnSubmitHomeworkCreate);
         View btnCancel = findViewById(R.id.btnHomeworkCancel);
-        View btnClose = findViewById(R.id.btnHomeworkClose);
 
         btnPickFile.setOnClickListener(v -> filePicker.launch("*/*"));
         btnPickIcon.setOnClickListener(v -> iconPicker.launch("image/*"));
         btnCreate.setOnClickListener(v -> createHomework());
         btnCancel.setOnClickListener(v -> finish());
-        btnClose.setOnClickListener(v -> finish());
 
         apiService = ApiClient.getService(this);
 
