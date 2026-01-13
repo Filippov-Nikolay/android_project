@@ -20,6 +20,7 @@ import com.example.onlinediary.model.Subject;
 import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
+import com.example.onlinediary.util.BottomNavHelper;
 import com.example.onlinediary.util.ScheduleTimeUtils;
 
 import java.time.LocalDate;
@@ -89,6 +90,7 @@ public class ScheduleEditActivity extends AppCompatActivity {
         setupLessonSpinner();
 
         apiService = ApiClient.getService(this);
+        BottomNavHelper.setupAdminNav(this, R.id.navAdminSchedule);
 
         btnSave.setOnClickListener(v -> saveSchedule());
         listButton.setOnClickListener(v -> startActivity(new Intent(this, ScheduleAdminActivity.class)));

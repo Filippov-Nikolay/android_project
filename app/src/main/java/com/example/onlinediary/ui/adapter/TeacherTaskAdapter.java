@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.onlinediary.R;
 import com.example.onlinediary.model.TeacherTask;
+import com.example.onlinediary.util.ApiUrls;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +25,6 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
         void onSubmissions(TeacherTask task);
         void onDelete(TeacherTask task);
     }
-
-    private static final String FILE_BASE_URL = "http://10.0.2.2:8080/api/files/download/";
 
     private final List<TeacherTask> items = new ArrayList<>();
     private final TaskActionListener listener;
@@ -56,8 +55,8 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
         holder.titleText.setText(task.title == null ? "Task" : task.title);
         holder.groupText.setText(task.groupName == null ? "Group" : task.groupName);
 
-        int submitted = task.stats == null ? 0 : task.stats.submitted;
-        int total = task.stats == null ? 0 : task.stats.total;
+        int submitted = getSubmittedCount(task);
+        int total = getTotalCount(task);
         int max = Math.max(total, 1);
         int percent = total == 0 ? 0 : Math.round((submitted * 100f) / total);
         holder.progressPercent.setText(percent + "%");
@@ -88,11 +87,11 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
             );
         }
 
-        String iconFileName = task.iconFileName == null ? "" : task.iconFileName.trim();
-        if (!iconFileName.isEmpty()) {
+        String iconUrl = buildIconUrl(task == null ? null : task.iconFileName);
+        if (iconUrl != null) {
             holder.iconView.setColorFilter(null);
             Glide.with(holder.itemView)
-                    .load(FILE_BASE_URL + iconFileName)
+                    .load(iconUrl)
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .into(holder.iconView);
         } else {
@@ -155,5 +154,39 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
             return "SUBJECT";
         }
         return value.trim().toUpperCase(Locale.US);
+    }
+
+    private String buildIconUrl(String iconFileName) {
+        if (iconFileName == null) {
+            return null;
+        }
+        String trimmed = iconFileName.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+            return trimmed;
+        }
+        return ApiUrls.fileDownloadUrl(trimmed);
+    }
+
+    private int getSubmittedCount(TeacherTask task) {
+        if (task == null) {
+            return 0;
+        }
+        if (task.stats != null) {
+            return task.stats.submitted;
+        }
+        return task.submissionCount == null ? 0 : task.submissionCount;
+    }
+
+    private int getTotalCount(TeacherTask task) {
+        if (task == null) {
+            return 0;
+        }
+        if (task.stats != null) {
+            return task.stats.total;
+        }
+        return task.totalStudents == null ? 0 : task.totalStudents;
     }
 }

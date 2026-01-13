@@ -30,6 +30,7 @@ import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.DashboardNewsAdapter;
 import com.example.onlinediary.ui.adapter.DashboardRowAdapter;
+import com.example.onlinediary.util.BottomNavHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -133,6 +134,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         setupStaticNews();
         setupStaticRecommendations();
+        BottomNavHelper.setupStudentNav(this, R.id.navStudentDashboard);
 
         apiService = ApiClient.getService(this);
         loadData();

@@ -192,7 +192,8 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:fillViewport="true"
-            android:overScrollMode="never">
+            android:overScrollMode="never"
+            android:paddingBottom="96dp">
 
             <com.example.onlinediary.ui.view.ScheduleTimelineLayout
                 android:id="@+id/scheduleTimeline"
@@ -200,6 +201,15 @@
                 android:layout_height="wrap_content" />
         </androidx.core.widget.NestedScrollView>
     </LinearLayout>
+
+    <include
+        layout="@layout/view_bottom_nav_student"
+        android:layout_gravity="bottom" />
+
+    <include
+        layout="@layout/view_bottom_nav_teacher"
+        android:layout_gravity="bottom"
+        android:visibility="gone" />
 
     <ProgressBar
         android:id="@+id/scheduleProgress"

@@ -2,11 +2,13 @@ package com.example.onlinediary;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,8 +23,11 @@ import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.SubmissionAdapter;
 import com.example.onlinediary.util.ApiUrls;
 import com.example.onlinediary.util.FileDownloadHelper;
+import com.example.onlinediary.util.SimpleTextWatcher;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -34,15 +39,31 @@ public class SubmissionsActivity extends AppCompatActivity {
     private SubmissionAdapter adapter;
     private ApiService apiService;
     private long assessmentId;
+    private EditText searchInput;
+    private TextView emptyState;
+    private final List<SubmissionItem> allItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submissions);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         progressBar = findViewById(R.id.submissionsProgress);
+        searchInput = findViewById(R.id.inputSubmissionSearch);
+        emptyState = findViewById(R.id.submissionsEmpty);
         RecyclerView recyclerView = findViewById(R.id.submissionsList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        findViewById(R.id.btnSubmissionsBack).setOnClickListener(v -> finish());
 
         assessmentId = getIntent().getLongExtra("assessmentId", -1);
         if (assessmentId <= 0) {
@@ -65,6 +86,7 @@ public class SubmissionsActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         apiService = ApiClient.getService(this);
+        searchInput.addTextChangedListener(new SimpleTextWatcher(text -> applyFilters()));
         loadSubmissions();
     }
 
@@ -75,9 +97,12 @@ public class SubmissionsActivity extends AppCompatActivity {
             public void onResponse(Call<List<SubmissionItem>> call, Response<List<SubmissionItem>> response) {
                 setLoading(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    adapter.setItems(response.body());
+                    allItems.clear();
+                    allItems.addAll(response.body());
+                    applyFilters();
                 } else {
                     Toast.makeText(SubmissionsActivity.this, "Failed to load submissions", Toast.LENGTH_SHORT).show();
+                    toggleEmpty(true);
                 }
             }
 
@@ -85,6 +110,7 @@ public class SubmissionsActivity extends AppCompatActivity {
             public void onFailure(Call<List<SubmissionItem>> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(SubmissionsActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+                toggleEmpty(true);
             }
         });
     }
@@ -157,5 +183,31 @@ public class SubmissionsActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void applyFilters() {
+        String query = searchInput.getText().toString().trim().toLowerCase(Locale.US);
+        List<SubmissionItem> filtered = new ArrayList<>();
+        for (SubmissionItem item : allItems) {
+            if (item == null) {
+                continue;
+            }
+            if (query.isEmpty()) {
+                filtered.add(item);
+                continue;
+            }
+            String name = item.studentName == null ? "" : item.studentName.toLowerCase(Locale.US);
+            if (name.contains(query)) {
+                filtered.add(item);
+            }
+        }
+        adapter.setItems(filtered);
+        toggleEmpty(filtered.isEmpty());
+    }
+
+    private void toggleEmpty(boolean isEmpty) {
+        if (emptyState != null) {
+            emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        }
     }
 }

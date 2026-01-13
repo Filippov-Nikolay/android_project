@@ -16,6 +16,7 @@ import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.UserAdapter;
+import com.example.onlinediary.util.BottomNavHelper;
 
 import java.util.List;
 
@@ -69,6 +70,7 @@ public class UsersActivity extends AppCompatActivity {
         btnCreate.setOnClickListener(v -> startActivity(new Intent(UsersActivity.this, UserCreateActivity.class)));
 
         apiService = ApiClient.getService(this);
+        BottomNavHelper.setupAdminNav(this, R.id.navAdminUsers);
     }
 
     @Override

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/adminBottomNav"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:layout_margin="12dp"
+    app:cardBackgroundColor="@color/schedule_surface"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="12dp"
+    app:strokeColor="@color/schedule_line"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/navAdminStats"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <View
+                android:id="@+id/navAdminStatsIndicator"
+                android:layout_width="22dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@color/schedule_accent"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/navAdminStatsIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Stats"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                android:tint="@color/schedule_muted" />
+
+            <TextView
+                android:id="@+id/navAdminStatsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Stats"
+                android:textColor="@color/schedule_muted"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navAdminUsers"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <View
+                android:id="@+id/navAdminUsersIndicator"
+                android:layout_width="22dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@color/schedule_accent"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/navAdminUsersIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Users"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:tint="@color/schedule_muted" />
+
+            <TextView
+                android:id="@+id/navAdminUsersLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Users"
+                android:textColor="@color/schedule_muted"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navAdminSubjects"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <View
+                android:id="@+id/navAdminSubjectsIndicator"
+                android:layout_width="22dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@color/schedule_accent"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/navAdminSubjectsIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Subjects"
+                android:src="@android:drawable/ic_menu_edit"
+                android:tint="@color/schedule_muted" />
+
+            <TextView
+                android:id="@+id/navAdminSubjectsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Subjects"
+                android:textColor="@color/schedule_muted"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navAdminSchedule"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <View
+                android:id="@+id/navAdminScheduleIndicator"
+                android:layout_width="22dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@color/schedule_accent"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/navAdminScheduleIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Schedule"
+                android:src="@android:drawable/ic_menu_my_calendar"
+                android:tint="@color/schedule_muted" />
+
+            <TextView
+                android:id="@+id/navAdminScheduleLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Schedule"
+                android:textColor="@color/schedule_muted"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

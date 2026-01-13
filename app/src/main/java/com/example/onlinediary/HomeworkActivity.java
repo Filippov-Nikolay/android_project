@@ -1,11 +1,13 @@
 package com.example.onlinediary;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +18,7 @@ import com.example.onlinediary.model.HomeworkItem;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.HomeworkAdapter;
+import com.example.onlinediary.util.BottomNavHelper;
 import com.example.onlinediary.util.SimpleItemSelectedListener;
 import com.google.gson.Gson;
 
@@ -30,15 +33,37 @@ public class HomeworkActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private HomeworkAdapter adapter;
     private ApiService apiService;
+    private TextView emptyText;
+    private TextView countText;
+    private Spinner subjectFilter;
+    private View tabTodo;
+    private View tabPending;
+    private View tabDone;
     private final List<HomeworkItem> allItems = new ArrayList<>();
     private final Gson gson = new Gson();
+    private String activeStatus = "todo";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homework);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         progressBar = findViewById(R.id.homeworkProgress);
+        emptyText = findViewById(R.id.homeworkEmpty);
+        countText = findViewById(R.id.homeworkCount);
+        subjectFilter = findViewById(R.id.homeworkFilter);
+        tabTodo = findViewById(R.id.btnHomeworkTabTodo);
+        tabPending = findViewById(R.id.btnHomeworkTabPending);
+        tabDone = findViewById(R.id.btnHomeworkTabDone);
         RecyclerView recyclerView = findViewById(R.id.homeworkList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -49,17 +74,26 @@ public class HomeworkActivity extends AppCompatActivity {
         });
         recyclerView.setAdapter(adapter);
 
-        Spinner filterSpinner = findViewById(R.id.homeworkFilter);
-        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                new String[]{"All", "Todo", "Pending", "Done"}
-        );
-        filterSpinner.setAdapter(filterAdapter);
-        filterSpinner.setSelection(0);
-        filterSpinner.setOnItemSelectedListener(new SimpleItemSelectedListener(position -> applyFilter(position)));
+        tabTodo.setOnClickListener(v -> {
+            activeStatus = "todo";
+            updateTabs();
+            applyFilter();
+        });
+        tabPending.setOnClickListener(v -> {
+            activeStatus = "pending";
+            updateTabs();
+            applyFilter();
+        });
+        tabDone.setOnClickListener(v -> {
+            activeStatus = "done";
+            updateTabs();
+            applyFilter();
+        });
 
         apiService = ApiClient.getService(this);
+        setupSubjectFilter();
+        updateTabs();
+        BottomNavHelper.setupStudentNav(this, R.id.navStudentHomework);
     }
 
     @Override
@@ -77,9 +111,11 @@ public class HomeworkActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     allItems.clear();
                     allItems.addAll(response.body());
-                    applyFilter(0);
+                    updateSubjectFilter();
+                    applyFilter();
                 } else {
                     Toast.makeText(HomeworkActivity.this, "Failed to load homework", Toast.LENGTH_SHORT).show();
+                    toggleEmpty(true);
                 }
             }
 
@@ -87,30 +123,111 @@ public class HomeworkActivity extends AppCompatActivity {
             public void onFailure(Call<List<HomeworkItem>> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(HomeworkActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+                toggleEmpty(true);
             }
         });
     }
 
-    private void applyFilter(int position) {
-        String status = null;
-        if (position == 1) {
-            status = "todo";
-        } else if (position == 2) {
-            status = "pending";
-        } else if (position == 3) {
-            status = "done";
-        }
-
+    private void applyFilter() {
+        String status = activeStatus;
+        String subject = getSelectedSubject();
         List<HomeworkItem> filtered = new ArrayList<>();
         for (HomeworkItem item : allItems) {
-            if (status == null || status.equalsIgnoreCase(item.status)) {
-                filtered.add(item);
+            if (item == null) {
+                continue;
             }
+            if (status != null && (item.status == null || !status.equalsIgnoreCase(item.status))) {
+                continue;
+            }
+            if (subject != null && item.subjectName != null
+                    && !subject.equalsIgnoreCase(item.subjectName.trim())) {
+                continue;
+            }
+            if (subject != null && item.subjectName == null) {
+                continue;
+            }
+            filtered.add(item);
         }
         adapter.setItems(filtered);
+        if (countText != null) {
+            countText.setText("Available tasks: " + filtered.size());
+        }
+        toggleEmpty(filtered.isEmpty());
     }
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void toggleEmpty(boolean isEmpty) {
+        if (emptyText != null) {
+            emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void updateTabs() {
+        updateTabStyles(tabTodo, "todo".equals(activeStatus));
+        updateTabStyles(tabPending, "pending".equals(activeStatus));
+        updateTabStyles(tabDone, "done".equals(activeStatus));
+    }
+
+    private void updateTabStyles(View tab, boolean selected) {
+        if (!(tab instanceof com.google.android.material.button.MaterialButton)) {
+            return;
+        }
+        com.google.android.material.button.MaterialButton button =
+                (com.google.android.material.button.MaterialButton) tab;
+        button.setBackgroundTintList(getColorStateList(
+                selected ? R.color.schedule_surface_muted : R.color.schedule_surface
+        ));
+        button.setTextColor(getColor(selected ? R.color.schedule_text : R.color.schedule_muted));
+    }
+
+    private void setupSubjectFilter() {
+        subjectFilter.setAdapter(createSpinnerAdapter(new ArrayList<>(), "All subjects"));
+        subjectFilter.setOnItemSelectedListener(new SimpleItemSelectedListener(position -> applyFilter()));
+    }
+
+    private void updateSubjectFilter() {
+        java.util.Set<String> subjects = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (HomeworkItem item : allItems) {
+            if (item != null && item.subjectName != null && !item.subjectName.trim().isEmpty()) {
+                subjects.add(item.subjectName.trim());
+            }
+        }
+        List<String> subjectList = new ArrayList<>(subjects);
+        String selected = getSelectedSubject();
+        subjectFilter.setAdapter(createSpinnerAdapter(subjectList, "All subjects"));
+        restoreSelection(subjectList, selected);
+    }
+
+    private String getSelectedSubject() {
+        int position = subjectFilter.getSelectedItemPosition();
+        if (position <= 0) {
+            return null;
+        }
+        Object item = subjectFilter.getSelectedItem();
+        return item == null ? null : item.toString();
+    }
+
+    private void restoreSelection(List<String> items, String selected) {
+        if (selected == null || items == null) {
+            return;
+        }
+        for (int i = 0; i < items.size(); i++) {
+            if (selected.equalsIgnoreCase(items.get(i))) {
+                subjectFilter.setSelection(i + 1);
+                return;
+            }
+        }
+    }
+
+    private ArrayAdapter<String> createSpinnerAdapter(List<String> items, String placeholder) {
+        List<String> values = new ArrayList<>();
+        values.add(placeholder);
+        values.addAll(items);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, values);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        return adapter;
     }
 }
