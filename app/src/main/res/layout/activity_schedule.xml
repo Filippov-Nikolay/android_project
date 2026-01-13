@@ -13,7 +13,7 @@
             android:id="@+id/scheduleHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/schedule_header"
+            android:background="@color/schedule_surface"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="16dp">
@@ -54,26 +54,35 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <ImageButton
-                android:id="@+id/btnListMode"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Week view"
-                android:scaleType="center"
-                android:src="@android:drawable/ic_menu_agenda"
-                android:tint="@color/schedule_accent" />
+            <LinearLayout
+                android:id="@+id/scheduleViewToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_schedule_segmented"
+                android:orientation="horizontal"
+                android:padding="4dp">
 
-            <ImageButton
-                android:id="@+id/btnCalendarMode"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="6dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Month view"
-                android:scaleType="center"
-                android:src="@android:drawable/ic_menu_my_calendar"
-                android:tint="@color/schedule_accent" />
+                <ImageButton
+                    android:id="@+id/btnListMode"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Week view"
+                    android:scaleType="center"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    android:tint="@color/schedule_muted" />
+
+                <ImageButton
+                    android:id="@+id/btnCalendarMode"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Month view"
+                    android:scaleType="center"
+                    android:src="@android:drawable/ic_menu_my_calendar"
+                    android:tint="@color/schedule_muted" />
+            </LinearLayout>
         </LinearLayout>
 
         <View
@@ -85,10 +94,12 @@
             android:id="@+id/scheduleWeekdays"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/schedule_surface"
             android:orientation="horizontal"
             android:padding="12dp">
 
             <TextView
+                android:id="@+id/scheduleWeekMon"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -98,6 +109,7 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/scheduleWeekTue"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -107,6 +119,7 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/scheduleWeekWed"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -116,6 +129,7 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/scheduleWeekThu"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -125,6 +139,7 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/scheduleWeekFri"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -134,6 +149,7 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/scheduleWeekSat"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -143,6 +159,7 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/scheduleWeekSun"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

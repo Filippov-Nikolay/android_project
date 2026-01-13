@@ -3,7 +3,6 @@ package com.example.onlinediary.ui.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -15,6 +14,7 @@ import androidx.annotation.Nullable;
 
 import com.example.onlinediary.R;
 import com.example.onlinediary.model.ScheduleEvent;
+import com.example.onlinediary.util.ScheduleTimeUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -28,13 +28,12 @@ public class ScheduleTimelineLayout extends FrameLayout {
     }
 
     private static final int DEFAULT_START_HOUR = 8;
-    private static final int DEFAULT_END_HOUR = 19;
-    private static final int DEFAULT_DURATION_MINUTES = 80;
+    private static final int DEFAULT_END_HOUR = 18;
 
     private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint nowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint nowTrianglePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint nowDotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final List<ScheduleEvent> events = new ArrayList<>();
 
@@ -66,9 +65,9 @@ public class ScheduleTimelineLayout extends FrameLayout {
     private void init() {
         setWillNotDraw(false);
         hourHeightPx = dpToPx(80);
-        labelWidthPx = dpToPx(52);
-        labelGapPx = dpToPx(10);
-        eventSidePaddingPx = dpToPx(12);
+        labelWidthPx = dpToPx(64);
+        labelGapPx = dpToPx(8);
+        eventSidePaddingPx = dpToPx(8);
 
         int leftPadding = labelWidthPx + labelGapPx;
         setPadding(leftPadding, dpToPx(12), eventSidePaddingPx, dpToPx(16));
@@ -77,14 +76,14 @@ public class ScheduleTimelineLayout extends FrameLayout {
         linePaint.setStrokeWidth(dpToPx(1));
 
         textPaint.setColor(getColor(R.color.schedule_muted));
-        textPaint.setTextSize(spToPx(12));
+        textPaint.setTextSize(spToPx(11));
         textPaint.setTextAlign(Paint.Align.RIGHT);
 
         nowPaint.setColor(getColor(R.color.schedule_now));
         nowPaint.setStrokeWidth(dpToPx(1.5f));
 
-        nowTrianglePaint.setColor(getColor(R.color.schedule_now));
-        nowTrianglePaint.setStyle(Paint.Style.FILL);
+        nowDotPaint.setColor(getColor(R.color.schedule_now));
+        nowDotPaint.setStyle(Paint.Style.FILL);
     }
 
     public void setSelectedDate(LocalDate date) {
@@ -118,15 +117,16 @@ public class ScheduleTimelineLayout extends FrameLayout {
         int minHour = DEFAULT_START_HOUR;
         int maxHour = DEFAULT_END_HOUR;
         for (ScheduleEvent event : events) {
-            LocalTime start = parseStartTime(event);
-            LocalTime end = parseEndTime(event, start);
+            LocalTime start = ScheduleTimeUtils.getStartTime(event);
+            LocalTime end = ScheduleTimeUtils.getEndTime(event, start);
             if (start != null) {
                 minHour = Math.min(minHour, start.getHour());
                 maxHour = Math.max(maxHour, start.getHour());
             }
             if (end != null) {
                 minHour = Math.min(minHour, end.getHour());
-                maxHour = Math.max(maxHour, end.getHour());
+                int endHour = end.getMinute() > 0 ? end.getHour() + 1 : end.getHour();
+                maxHour = Math.max(maxHour, endHour);
             }
         }
         startHour = Math.max(0, minHour);
@@ -137,8 +137,8 @@ public class ScheduleTimelineLayout extends FrameLayout {
         removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(getContext());
         for (ScheduleEvent event : events) {
-            LocalTime start = parseStartTime(event);
-            LocalTime end = parseEndTime(event, start);
+            LocalTime start = ScheduleTimeUtils.getStartTime(event);
+            LocalTime end = ScheduleTimeUtils.getEndTime(event, start);
             if (start == null || end == null) {
                 continue;
             }
@@ -147,6 +147,7 @@ public class ScheduleTimelineLayout extends FrameLayout {
             int height = Math.max(dpToPx(64), timeToPx(end) - timeToPx(start));
 
             View card = inflater.inflate(R.layout.item_schedule_timeline_event, this, false);
+            View typeBar = card.findViewById(R.id.scheduleEventTypeBar);
             TextView title = card.findViewById(R.id.scheduleEventTitle);
             TextView detail = card.findViewById(R.id.scheduleEventDetail);
 
@@ -157,14 +158,8 @@ public class ScheduleTimelineLayout extends FrameLayout {
             title.setText(titleText);
 
             String timeRange = formatTime(start) + " - " + formatTime(end);
-            String detailText = timeRange;
-            if (event.room != null && !event.room.isEmpty()) {
-                detailText = detailText + " | Room " + event.room;
-            }
-            if (event.type != null && !event.type.isEmpty()) {
-                detailText = detailText + " | " + event.type;
-            }
-            detail.setText(detailText);
+            detail.setText(timeRange);
+            typeBar.setBackgroundColor(resolveTypeColor(event));
 
             if (eventClickListener != null) {
                 card.setOnClickListener(v -> eventClickListener.onEventClick(event));
@@ -175,7 +170,8 @@ public class ScheduleTimelineLayout extends FrameLayout {
                     height
             );
             params.topMargin = top + dpToPx(4);
-            params.rightMargin = dpToPx(8);
+            params.leftMargin = dpToPx(2);
+            params.rightMargin = dpToPx(2);
             addView(card, params);
         }
     }
@@ -226,57 +222,8 @@ public class ScheduleTimelineLayout extends FrameLayout {
         float y = startY + (minutesFromStart / 60f) * hourHeightPx;
         canvas.drawLine(contentLeft, y, contentRight, y, nowPaint);
 
-        float triangleSize = dpToPx(6);
-        Path triangle = new Path();
-        triangle.moveTo(contentLeft - triangleSize, y);
-        triangle.lineTo(contentLeft, y - triangleSize);
-        triangle.lineTo(contentLeft, y + triangleSize);
-        triangle.close();
-        canvas.drawPath(triangle, nowTrianglePaint);
-    }
-
-    private LocalTime parseStartTime(ScheduleEvent event) {
-        LocalTime parsed = parseTime(event.startTime);
-        if (parsed != null) {
-            return parsed;
-        }
-        int lesson = Math.max(1, event.lessonNumber);
-        int hour = DEFAULT_START_HOUR + (lesson - 1);
-        return LocalTime.of(Math.min(23, hour), 0);
-    }
-
-    private LocalTime parseEndTime(ScheduleEvent event, LocalTime start) {
-        LocalTime parsed = parseTime(event.endTime);
-        if (parsed != null) {
-            return parsed;
-        }
-        return start.plusMinutes(DEFAULT_DURATION_MINUTES);
-    }
-
-    private LocalTime parseTime(String value) {
-        if (value == null) {
-            return null;
-        }
-        String text = value.trim();
-        if (text.isEmpty()) {
-            return null;
-        }
-        int tIndex = text.indexOf('T');
-        if (tIndex >= 0) {
-            text = text.substring(tIndex + 1);
-        }
-        int dotIndex = text.indexOf('.');
-        if (dotIndex > 0) {
-            text = text.substring(0, dotIndex);
-        }
-        if (text.length() > 5) {
-            text = text.substring(0, 5);
-        }
-        try {
-            return LocalTime.parse(text);
-        } catch (Exception e) {
-            return null;
-        }
+        float dotRadius = dpToPx(5);
+        canvas.drawCircle(contentLeft - dotRadius, y, dotRadius, nowDotPaint);
     }
 
     private int timeToPx(LocalTime time) {
@@ -306,5 +253,22 @@ public class ScheduleTimelineLayout extends FrameLayout {
 
     private int getColor(int colorId) {
         return getResources().getColor(colorId);
+    }
+
+    private int resolveTypeColor(ScheduleEvent event) {
+        if (event == null || event.type == null) {
+            return getColor(R.color.schedule_accent);
+        }
+        String type = event.type.trim().toLowerCase(Locale.US);
+        if ("lecture".equals(type)) {
+            return getColor(R.color.schedule_type_lecture);
+        }
+        if ("practice".equals(type)) {
+            return getColor(R.color.schedule_type_practice);
+        }
+        if ("exam".equals(type)) {
+            return getColor(R.color.schedule_type_exam);
+        }
+        return getColor(R.color.schedule_accent);
     }
 }
