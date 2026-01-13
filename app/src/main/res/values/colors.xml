@@ -19,4 +19,8 @@
     <color name="schedule_type_practice">#51CF66</color>
     <color name="schedule_type_exam">#FF6B6B</color>
     <color name="dashboard_orange">#F97316</color>
+    <color name="manage_stat_blue">#3B82F6</color>
+    <color name="manage_stat_orange">#F59E0B</color>
+    <color name="manage_stat_green">#10B981</color>
+    <color name="manage_stat_red">#EF4444</color>
 </resources>
