@@ -1,12 +1,12 @@
 package com.example.onlinediary;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -14,6 +14,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.example.onlinediary.model.Group;
 import com.example.onlinediary.model.GroupCreateRequest;
 import com.example.onlinediary.model.Subject;
@@ -36,8 +38,10 @@ public class SubjectsActivity extends AppCompatActivity {
     private final List<Subject> subjects = new ArrayList<>();
     private final List<User> teachers = new ArrayList<>();
 
-    private LinearLayout groupsContainer;
-    private LinearLayout subjectsContainer;
+    private ChipGroup groupsChipGroup;
+    private ChipGroup subjectsChipGroup;
+    private TextView groupsEmpty;
+    private TextView subjectsEmpty;
     private ProgressBar progressBar;
 
     private Spinner assignSubjectSpinner;
@@ -45,9 +49,15 @@ public class SubjectsActivity extends AppCompatActivity {
     private Spinner assignTeacherSpinner;
 
     private EditText groupNameInput;
-    private EditText groupCourseInput;
+    private Spinner groupCourseSpinner;
     private EditText subjectNameInput;
     private EditText subjectDescriptionInput;
+    private View editOverlay;
+    private View editCard;
+    private EditText editSubjectNameInput;
+    private EditText editSubjectDescriptionInput;
+    private Subject editingSubject;
+    private int pendingCalls = 0;
 
     private ApiService apiService;
 
@@ -56,8 +66,19 @@ public class SubjectsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subjects);
 
-        groupsContainer = findViewById(R.id.groupsContainer);
-        subjectsContainer = findViewById(R.id.subjectsContainer);
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
+        groupsChipGroup = findViewById(R.id.groupsChipGroup);
+        subjectsChipGroup = findViewById(R.id.subjectsChipGroup);
+        groupsEmpty = findViewById(R.id.groupsEmpty);
+        subjectsEmpty = findViewById(R.id.subjectsEmpty);
         progressBar = findViewById(R.id.subjectsProgress);
 
         assignSubjectSpinner = findViewById(R.id.spinnerAssignSubject);
@@ -65,17 +86,30 @@ public class SubjectsActivity extends AppCompatActivity {
         assignTeacherSpinner = findViewById(R.id.spinnerAssignTeacher);
 
         groupNameInput = findViewById(R.id.inputGroupName);
-        groupCourseInput = findViewById(R.id.inputGroupCourse);
+        groupCourseSpinner = findViewById(R.id.spinnerGroupCourse);
         subjectNameInput = findViewById(R.id.inputSubjectName);
         subjectDescriptionInput = findViewById(R.id.inputSubjectDescription);
+        editOverlay = findViewById(R.id.subjectEditOverlay);
+        editCard = findViewById(R.id.subjectEditCard);
+        editSubjectNameInput = findViewById(R.id.editSubjectName);
+        editSubjectDescriptionInput = findViewById(R.id.editSubjectDescription);
 
-        Button btnCreateGroup = findViewById(R.id.btnCreateGroup);
-        Button btnCreateSubject = findViewById(R.id.btnCreateSubject);
-        Button btnAssign = findViewById(R.id.btnAssignTeacher);
+        View btnCreateGroup = findViewById(R.id.btnCreateGroup);
+        View btnCreateSubject = findViewById(R.id.btnCreateSubject);
+        View btnAssign = findViewById(R.id.btnAssignTeacher);
+        View btnEditCancel = findViewById(R.id.btnEditSubjectCancel);
+        View btnEditSave = findViewById(R.id.btnEditSubjectSave);
 
         btnCreateGroup.setOnClickListener(v -> createGroup());
         btnCreateSubject.setOnClickListener(v -> createSubject());
         btnAssign.setOnClickListener(v -> assignTeacher());
+        btnEditCancel.setOnClickListener(v -> hideEditOverlay());
+        btnEditSave.setOnClickListener(v -> updateSubject());
+        editOverlay.setOnClickListener(v -> hideEditOverlay());
+        editCard.setOnClickListener(v -> {
+        });
+
+        setupCourseSpinner();
 
         apiService = ApiClient.getService(this);
     }
@@ -87,29 +121,33 @@ public class SubjectsActivity extends AppCompatActivity {
     }
 
     private void loadData() {
+        pendingCalls = 0;
         setLoading(true);
+        beginCall();
         apiService.getGroups().enqueue(new Callback<List<Group>>() {
             @Override
             public void onResponse(Call<List<Group>> call, Response<List<Group>> response) {
+                endCall();
                 if (response.isSuccessful() && response.body() != null) {
                     groups.clear();
                     groups.addAll(response.body());
                     renderGroups();
                     updateGroupSpinner();
                 }
-                setLoading(false);
             }
 
             @Override
             public void onFailure(Call<List<Group>> call, Throwable t) {
-                setLoading(false);
+                endCall();
                 Toast.makeText(SubjectsActivity.this, "Failed to load groups", Toast.LENGTH_SHORT).show();
             }
         });
 
+        beginCall();
         apiService.getSubjects().enqueue(new Callback<List<Subject>>() {
             @Override
             public void onResponse(Call<List<Subject>> call, Response<List<Subject>> response) {
+                endCall();
                 if (response.isSuccessful() && response.body() != null) {
                     subjects.clear();
                     subjects.addAll(response.body());
@@ -120,13 +158,16 @@ public class SubjectsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Subject>> call, Throwable t) {
+                endCall();
                 Toast.makeText(SubjectsActivity.this, "Failed to load subjects", Toast.LENGTH_SHORT).show();
             }
         });
 
+        beginCall();
         apiService.getTeachers().enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                endCall();
                 if (response.isSuccessful() && response.body() != null) {
                     teachers.clear();
                     teachers.addAll(response.body());
@@ -136,52 +177,33 @@ public class SubjectsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
+                endCall();
                 Toast.makeText(SubjectsActivity.this, "Failed to load teachers", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void renderGroups() {
-        groupsContainer.removeAllViews();
+        groupsChipGroup.removeAllViews();
         for (Group group : groups) {
-            LinearLayout row = new LinearLayout(this);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            TextView text = new TextView(this);
-            text.setText(group.name + (group.course != null ? " (" + group.course + ")" : ""));
-            text.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-
-            Button deleteBtn = new Button(this);
-            deleteBtn.setText("Delete");
-            deleteBtn.setOnClickListener(v -> deleteGroup(group.id));
-
-            row.addView(text);
-            row.addView(deleteBtn);
-            groupsContainer.addView(row);
+            String label = group.name + (group.course != null ? " (" + group.course + ")" : "");
+            Chip chip = createChip(label, true);
+            chip.setOnCloseIconClickListener(v -> confirmDeleteGroup(group));
+            groupsChipGroup.addView(chip);
         }
+        groupsEmpty.setVisibility(groups.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void renderSubjects() {
-        subjectsContainer.removeAllViews();
+        subjectsChipGroup.removeAllViews();
         for (Subject subject : subjects) {
-            LinearLayout row = new LinearLayout(this);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            TextView text = new TextView(this);
-            text.setText(subject.name);
-            text.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-
-            Button editBtn = new Button(this);
-            editBtn.setText("Edit");
-            editBtn.setOnClickListener(v -> showEditSubjectDialog(subject));
-
-            Button deleteBtn = new Button(this);
-            deleteBtn.setText("Delete");
-            deleteBtn.setOnClickListener(v -> deleteSubject(subject.id));
-
-            row.addView(text);
-            row.addView(editBtn);
-            row.addView(deleteBtn);
-            subjectsContainer.addView(row);
+            String label = subject.name == null ? "Subject" : subject.name;
+            Chip chip = createChip(label, true);
+            chip.setOnClickListener(v -> showEditOverlay(subject));
+            chip.setOnCloseIconClickListener(v -> confirmDeleteSubject(subject));
+            subjectsChipGroup.addView(chip);
         }
+        subjectsEmpty.setVisibility(subjects.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void updateGroupSpinner() {
@@ -189,7 +211,7 @@ public class SubjectsActivity extends AppCompatActivity {
         for (Group group : groups) {
             names.add(group.name);
         }
-        assignGroupSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, names));
+        assignGroupSpinner.setAdapter(createSpinnerAdapter(names, "Select group"));
     }
 
     private void updateSubjectSpinner() {
@@ -197,7 +219,7 @@ public class SubjectsActivity extends AppCompatActivity {
         for (Subject subject : subjects) {
             names.add(subject.name);
         }
-        assignSubjectSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, names));
+        assignSubjectSpinner.setAdapter(createSpinnerAdapter(names, "Select subject"));
     }
 
     private void updateTeacherSpinner() {
@@ -206,13 +228,12 @@ public class SubjectsActivity extends AppCompatActivity {
             String name = teacher.lastName + " " + teacher.firstName;
             names.add(name.trim());
         }
-        assignTeacherSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, names));
+        assignTeacherSpinner.setAdapter(createSpinnerAdapter(names, "Select teacher"));
     }
 
     private void createGroup() {
         String name = groupNameInput.getText().toString().trim();
-        String courseText = groupCourseInput.getText().toString().trim();
-        int course = courseText.isEmpty() ? 1 : Integer.parseInt(courseText);
+        int course = Integer.parseInt(groupCourseSpinner.getSelectedItem().toString());
 
         if (name.isEmpty()) {
             Toast.makeText(this, "Enter group name", Toast.LENGTH_SHORT).show();
@@ -226,7 +247,7 @@ public class SubjectsActivity extends AppCompatActivity {
                 setLoading(false);
                 if (response.isSuccessful()) {
                     groupNameInput.setText("");
-                    groupCourseInput.setText("");
+                    groupCourseSpinner.setSelection(0);
                     loadData();
                 } else {
                     Toast.makeText(SubjectsActivity.this, "Failed to create group", Toast.LENGTH_SHORT).show();
@@ -293,29 +314,26 @@ public class SubjectsActivity extends AppCompatActivity {
         });
     }
 
-    private void showEditSubjectDialog(Subject subject) {
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        int padding = (int) (16 * getResources().getDisplayMetrics().density);
-        layout.setPadding(padding, padding, padding, padding);
-
-        EditText nameInput = new EditText(this);
-        nameInput.setText(subject.name);
-        EditText descInput = new EditText(this);
-        descInput.setText(subject.description);
-
-        layout.addView(nameInput);
-        layout.addView(descInput);
-
-        new AlertDialog.Builder(this)
-                .setTitle("Edit subject")
-                .setView(layout)
-                .setPositiveButton("Save", (dialog, which) -> updateSubject(subject.id, nameInput.getText().toString().trim(), descInput.getText().toString().trim()))
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .show();
+    private void showEditOverlay(Subject subject) {
+        editingSubject = subject;
+        editSubjectNameInput.setText(subject.name == null ? "" : subject.name);
+        editSubjectDescriptionInput.setText(subject.description == null ? "" : subject.description);
+        editOverlay.setVisibility(View.VISIBLE);
     }
 
-    private void updateSubject(long id, String name, String description) {
+    private void hideEditOverlay() {
+        editingSubject = null;
+        editOverlay.setVisibility(View.GONE);
+    }
+
+    private void updateSubject() {
+        if (editingSubject == null) {
+            return;
+        }
+
+        long id = editingSubject.id;
+        String name = editSubjectNameInput.getText().toString().trim();
+        String description = editSubjectDescriptionInput.getText().toString().trim();
         if (name.isEmpty()) {
             Toast.makeText(this, "Subject name is required", Toast.LENGTH_SHORT).show();
             return;
@@ -327,6 +345,7 @@ public class SubjectsActivity extends AppCompatActivity {
             public void onResponse(Call<Subject> call, Response<Subject> response) {
                 setLoading(false);
                 if (response.isSuccessful()) {
+                    hideEditOverlay();
                     loadData();
                 } else {
                     Toast.makeText(SubjectsActivity.this, "Failed to update subject", Toast.LENGTH_SHORT).show();
@@ -368,9 +387,18 @@ public class SubjectsActivity extends AppCompatActivity {
             return;
         }
 
-        Subject subject = subjects.get(assignSubjectSpinner.getSelectedItemPosition());
-        Group group = groups.get(assignGroupSpinner.getSelectedItemPosition());
-        User teacher = teachers.get(assignTeacherSpinner.getSelectedItemPosition());
+        int subjectIndex = assignSubjectSpinner.getSelectedItemPosition() - 1;
+        int groupIndex = assignGroupSpinner.getSelectedItemPosition() - 1;
+        int teacherIndex = assignTeacherSpinner.getSelectedItemPosition() - 1;
+
+        if (subjectIndex < 0 || groupIndex < 0 || teacherIndex < 0) {
+            Toast.makeText(this, "Select subject, group, and teacher", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Subject subject = subjects.get(subjectIndex);
+        Group group = groups.get(groupIndex);
+        User teacher = teachers.get(teacherIndex);
 
         setLoading(true);
         apiService.assignTeacher(new SubjectAssignmentRequest(teacher.id, subject.id, group.id))
@@ -380,6 +408,9 @@ public class SubjectsActivity extends AppCompatActivity {
                         setLoading(false);
                         if (response.isSuccessful()) {
                             Toast.makeText(SubjectsActivity.this, "Assigned", Toast.LENGTH_SHORT).show();
+                            assignSubjectSpinner.setSelection(0);
+                            assignGroupSpinner.setSelection(0);
+                            assignTeacherSpinner.setSelection(0);
                         } else {
                             Toast.makeText(SubjectsActivity.this, "Failed to assign", Toast.LENGTH_SHORT).show();
                         }
@@ -395,5 +426,66 @@ public class SubjectsActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void beginCall() {
+        pendingCalls++;
+        setLoading(true);
+    }
+
+    private void endCall() {
+        pendingCalls = Math.max(0, pendingCalls - 1);
+        setLoading(pendingCalls > 0);
+    }
+
+    private void setupCourseSpinner() {
+        List<String> courses = new ArrayList<>();
+        courses.add("1");
+        courses.add("2");
+        courses.add("3");
+        courses.add("4");
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, courses);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        groupCourseSpinner.setAdapter(adapter);
+    }
+
+    private ArrayAdapter<String> createSpinnerAdapter(List<String> items, String placeholder) {
+        List<String> values = new ArrayList<>();
+        values.add(placeholder);
+        values.addAll(items);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, values);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        return adapter;
+    }
+
+    private Chip createChip(String label, boolean closable) {
+        Chip chip = new Chip(this);
+        chip.setText(label);
+        chip.setTextColor(getColor(R.color.schedule_text));
+        chip.setChipBackgroundColor(ColorStateList.valueOf(getColor(R.color.schedule_surface_muted)));
+        chip.setChipStrokeColor(ColorStateList.valueOf(getColor(R.color.schedule_line)));
+        chip.setChipStrokeWidth(1f);
+        chip.setCloseIconVisible(closable);
+        chip.setCloseIconTint(ColorStateList.valueOf(getColor(R.color.schedule_muted)));
+        chip.setEnsureMinTouchTargetSize(false);
+        return chip;
+    }
+
+    private void confirmDeleteGroup(Group group) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete group")
+                .setMessage("Are you sure you want to delete " + group.name + "?")
+                .setPositiveButton("Delete", (dialog, which) -> deleteGroup(group.id))
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    private void confirmDeleteSubject(Subject subject) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete subject")
+                .setMessage("Are you sure you want to delete " + subject.name + "?")
+                .setPositiveButton("Delete", (dialog, which) -> deleteSubject(subject.id))
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 }

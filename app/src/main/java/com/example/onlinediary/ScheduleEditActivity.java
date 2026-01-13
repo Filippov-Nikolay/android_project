@@ -1,12 +1,14 @@
 package com.example.onlinediary;
 
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,9 +20,12 @@ import com.example.onlinediary.model.Subject;
 import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
+import com.example.onlinediary.util.ScheduleTimeUtils;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -35,41 +40,65 @@ public class ScheduleEditActivity extends AppCompatActivity {
     private Spinner subjectSpinner;
     private Spinner teacherSpinner;
     private Spinner typeSpinner;
+    private Spinner lessonSpinner;
     private EditText dateInput;
-    private EditText lessonInput;
     private EditText roomInput;
+    private TextView titleText;
+    private TextView subtitleText;
     private ProgressBar progressBar;
+    private View listButton;
 
     private ApiService apiService;
     private long scheduleId;
     private ScheduleEvent currentItem;
+    private final List<Integer> lessonNumbers = new ArrayList<>();
+
+    private static final String[] TYPE_LABELS = new String[]{"Lecture", "Practice", "Exam"};
+    private static final String[] TYPE_VALUES = new String[]{"lecture", "practice", "exam"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_edit);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         groupSpinner = findViewById(R.id.spinnerScheduleGroup);
         subjectSpinner = findViewById(R.id.spinnerScheduleSubject);
         teacherSpinner = findViewById(R.id.spinnerScheduleTeacher);
         typeSpinner = findViewById(R.id.spinnerScheduleType);
+        lessonSpinner = findViewById(R.id.spinnerScheduleLesson);
         dateInput = findViewById(R.id.inputScheduleDate);
-        lessonInput = findViewById(R.id.inputScheduleLesson);
         roomInput = findViewById(R.id.inputScheduleRoom);
         progressBar = findViewById(R.id.scheduleEditProgress);
-        Button btnSave = findViewById(R.id.btnSaveSchedule);
+        View btnSave = findViewById(R.id.btnSaveSchedule);
+        listButton = findViewById(R.id.btnScheduleList);
+        titleText = findViewById(R.id.scheduleEditTitle);
+        subtitleText = findViewById(R.id.scheduleEditSubtitle);
 
         scheduleId = getIntent().getLongExtra("scheduleId", -1);
 
-        typeSpinner.setAdapter(new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                new String[]{"lecture", "practice", "exam"}
-        ));
+        setupTypeSpinner();
+        setupLessonSpinner();
 
         apiService = ApiClient.getService(this);
 
         btnSave.setOnClickListener(v -> saveSchedule());
+        listButton.setOnClickListener(v -> startActivity(new Intent(this, ScheduleAdminActivity.class)));
+
+        if (scheduleId > 0) {
+            titleText.setText("Edit schedule");
+            subtitleText.setText("Update schedule entry details");
+        } else {
+            dateInput.setText(LocalDate.now().toString());
+        }
 
         loadGroups();
         loadSubjects();
@@ -90,11 +119,7 @@ public class ScheduleEditActivity extends AppCompatActivity {
                     for (Group group : groups) {
                         names.add(group.name);
                     }
-                    groupSpinner.setAdapter(new ArrayAdapter<>(
-                            ScheduleEditActivity.this,
-                            android.R.layout.simple_spinner_dropdown_item,
-                            names
-                    ));
+                    groupSpinner.setAdapter(createSpinnerAdapter(names, "Select group"));
                     applySelection();
                 }
             }
@@ -117,11 +142,7 @@ public class ScheduleEditActivity extends AppCompatActivity {
                     for (Subject subject : subjects) {
                         names.add(subject.name);
                     }
-                    subjectSpinner.setAdapter(new ArrayAdapter<>(
-                            ScheduleEditActivity.this,
-                            android.R.layout.simple_spinner_dropdown_item,
-                            names
-                    ));
+                    subjectSpinner.setAdapter(createSpinnerAdapter(names, "Select subject"));
                     applySelection();
                 }
             }
@@ -144,11 +165,7 @@ public class ScheduleEditActivity extends AppCompatActivity {
                     for (User teacher : teachers) {
                         names.add((teacher.lastName + " " + teacher.firstName).trim());
                     }
-                    teacherSpinner.setAdapter(new ArrayAdapter<>(
-                            ScheduleEditActivity.this,
-                            android.R.layout.simple_spinner_dropdown_item,
-                            names
-                    ));
+                    teacherSpinner.setAdapter(createSpinnerAdapter(names, "Select teacher"));
                     applySelection();
                 }
             }
@@ -168,14 +185,8 @@ public class ScheduleEditActivity extends AppCompatActivity {
                 setLoading(false);
                 if (response.isSuccessful() && response.body() != null) {
                     currentItem = response.body();
-                    dateInput.setText(currentItem.date);
-                    lessonInput.setText(String.valueOf(currentItem.lessonNumber));
+                    dateInput.setText(dateOnly(currentItem.date));
                     roomInput.setText(currentItem.room == null ? "" : currentItem.room);
-                    if (currentItem.type != null) {
-                        String type = currentItem.type.toLowerCase();
-                        int index = type.equals("practice") ? 1 : type.equals("exam") ? 2 : 0;
-                        typeSpinner.setSelection(index);
-                    }
                     applySelection();
                 } else {
                     Toast.makeText(ScheduleEditActivity.this, "Failed to load schedule", Toast.LENGTH_SHORT).show();
@@ -196,39 +207,59 @@ public class ScheduleEditActivity extends AppCompatActivity {
         }
         for (int i = 0; i < groups.size(); i++) {
             if (groups.get(i).id == currentItem.groupId) {
-                groupSpinner.setSelection(i);
+                groupSpinner.setSelection(i + 1);
                 break;
             }
         }
         for (int i = 0; i < subjects.size(); i++) {
             if (subjects.get(i).id == currentItem.subjectId) {
-                subjectSpinner.setSelection(i);
+                subjectSpinner.setSelection(i + 1);
                 break;
             }
         }
         for (int i = 0; i < teachers.size(); i++) {
             if (teachers.get(i).id == currentItem.teacherId) {
-                teacherSpinner.setSelection(i);
+                teacherSpinner.setSelection(i + 1);
                 break;
+            }
+        }
+
+        if (!lessonNumbers.isEmpty()) {
+            int lessonIndex = lessonNumbers.indexOf(currentItem.lessonNumber);
+            if (lessonIndex >= 0) {
+                lessonSpinner.setSelection(lessonIndex);
+            }
+        }
+
+        if (currentItem.type != null) {
+            String type = currentItem.type.trim().toLowerCase(Locale.US);
+            for (int i = 0; i < TYPE_VALUES.length; i++) {
+                if (TYPE_VALUES[i].equals(type)) {
+                    typeSpinner.setSelection(i);
+                    break;
+                }
             }
         }
     }
 
     private void saveSchedule() {
         String date = dateInput.getText().toString().trim();
-        String lessonText = lessonInput.getText().toString().trim();
         String room = roomInput.getText().toString().trim();
 
-        if (date.isEmpty() || lessonText.isEmpty() || groups.isEmpty() || subjects.isEmpty() || teachers.isEmpty()) {
+        int groupIndex = groupSpinner.getSelectedItemPosition() - 1;
+        int subjectIndex = subjectSpinner.getSelectedItemPosition() - 1;
+        int teacherIndex = teacherSpinner.getSelectedItemPosition() - 1;
+
+        if (date.isEmpty() || groupIndex < 0 || subjectIndex < 0 || teacherIndex < 0 || lessonNumbers.isEmpty()) {
             Toast.makeText(this, "Fill required fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int lessonNumber = Integer.parseInt(lessonText);
-        Group group = groups.get(groupSpinner.getSelectedItemPosition());
-        Subject subject = subjects.get(subjectSpinner.getSelectedItemPosition());
-        User teacher = teachers.get(teacherSpinner.getSelectedItemPosition());
-        String type = typeSpinner.getSelectedItem().toString().toUpperCase();
+        int lessonNumber = lessonNumbers.get(lessonSpinner.getSelectedItemPosition());
+        Group group = groups.get(groupIndex);
+        Subject subject = subjects.get(subjectIndex);
+        User teacher = teachers.get(teacherIndex);
+        String type = TYPE_VALUES[typeSpinner.getSelectedItemPosition()].toUpperCase(Locale.US);
 
         ScheduleRequest request = new ScheduleRequest(
                 group.id,
@@ -267,5 +298,42 @@ public class ScheduleEditActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void setupTypeSpinner() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, TYPE_LABELS);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        typeSpinner.setAdapter(adapter);
+    }
+
+    private void setupLessonSpinner() {
+        lessonNumbers.clear();
+        List<String> labels = new ArrayList<>();
+        for (int i = 1; i <= 6; i++) {
+            lessonNumbers.add(i);
+            String range = ScheduleTimeUtils.getTimeRangeLabel(i);
+            String label = range.isEmpty() ? "Lesson " + i : "Lesson " + i + " (" + range + ")";
+            labels.add(label);
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, labels);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        lessonSpinner.setAdapter(adapter);
+    }
+
+    private ArrayAdapter<String> createSpinnerAdapter(List<String> items, String placeholder) {
+        List<String> values = new ArrayList<>();
+        values.add(placeholder);
+        values.addAll(items);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, values);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        return adapter;
+    }
+
+    private String dateOnly(String value) {
+        if (value == null) {
+            return "";
+        }
+        int idx = value.indexOf('T');
+        return idx > 0 ? value.substring(0, idx) : value;
     }
 }

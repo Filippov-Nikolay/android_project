@@ -1,83 +1,230 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@color/white"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:background="@color/schedule_background">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/scheduleEditTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Schedule builder"
+                        android:textColor="@color/schedule_text"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/scheduleEditSubtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Add lessons to calendar"
+                        android:textColor="@color/schedule_muted"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnScheduleList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="All lessons"
+                    android:textAllCaps="false"
+                    android:textColor="@color/schedule_text"
+                    app:backgroundTint="@color/schedule_surface_muted"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/schedule_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeColor="@color/schedule_line"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Date"
+                        android:textColor="@color/schedule_muted"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/inputScheduleDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_form_input"
+                        android:hint="YYYY-MM-DD"
+                        android:inputType="date"
+                        android:padding="12dp"
+                        android:textColor="@color/schedule_text"
+                        android:textColorHint="@color/schedule_muted" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Group"
+                        android:textColor="@color/schedule_muted"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/spinnerScheduleGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_form_input"
+                        android:padding="10dp"
+                        android:popupBackground="@color/schedule_surface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Subject"
+                        android:textColor="@color/schedule_muted"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/spinnerScheduleSubject"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_form_input"
+                        android:padding="10dp"
+                        android:popupBackground="@color/schedule_surface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Teacher"
+                        android:textColor="@color/schedule_muted"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/spinnerScheduleTeacher"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_form_input"
+                        android:padding="10dp"
+                        android:popupBackground="@color/schedule_surface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Lesson"
+                        android:textColor="@color/schedule_muted"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/spinnerScheduleLesson"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_form_input"
+                        android:padding="10dp"
+                        android:popupBackground="@color/schedule_surface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Lesson type"
+                        android:textColor="@color/schedule_muted"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/spinnerScheduleType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_form_input"
+                        android:padding="10dp"
+                        android:popupBackground="@color/schedule_surface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Room"
+                        android:textColor="@color/schedule_muted"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/inputScheduleRoom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_form_input"
+                        android:hint="Room 402"
+                        android:padding="12dp"
+                        android:textColor="@color/schedule_text"
+                        android:textColorHint="@color/schedule_muted" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSaveSchedule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:text="Save schedule"
+                        android:textAllCaps="false"
+                        android:textColor="@color/schedule_background"
+                        app:backgroundTint="@color/schedule_accent"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <ProgressBar
+        android:id="@+id/scheduleEditProgress"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
-
-        <TextView
-            android:id="@+id/scheduleEditTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Schedule Entry"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/inputScheduleDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="Date (YYYY-MM-DD)" />
-
-        <Spinner
-            android:id="@+id/spinnerScheduleGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
-
-        <Spinner
-            android:id="@+id/spinnerScheduleSubject"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
-
-        <Spinner
-            android:id="@+id/spinnerScheduleTeacher"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
-
-        <EditText
-            android:id="@+id/inputScheduleLesson"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Lesson number"
-            android:inputType="number" />
-
-        <Spinner
-            android:id="@+id/spinnerScheduleType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
-
-        <EditText
-            android:id="@+id/inputScheduleRoom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Room" />
-
-        <Button
-            android:id="@+id/btnSaveSchedule"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Save" />
-
-        <ProgressBar
-            android:id="@+id/scheduleEditProgress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:visibility="gone" />
-    </LinearLayout>
-</ScrollView>
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/schedule_accent"
+        android:visibility="gone" />
+</FrameLayout>
