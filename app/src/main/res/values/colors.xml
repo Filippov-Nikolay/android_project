@@ -18,4 +18,5 @@
     <color name="schedule_type_lecture">#4DABF7</color>
     <color name="schedule_type_practice">#51CF66</color>
     <color name="schedule_type_exam">#FF6B6B</color>
+    <color name="dashboard_orange">#F97316</color>
 </resources>
