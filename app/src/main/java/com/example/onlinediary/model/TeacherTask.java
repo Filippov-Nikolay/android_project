@@ -33,6 +33,12 @@ public class TeacherTask {
     @SerializedName("stats")
     public Stats stats;
 
+    @SerializedName("submissionCount")
+    public Integer submissionCount;
+
+    @SerializedName("totalStudents")
+    public Integer totalStudents;
+
     public static class Stats {
         @SerializedName("submitted")
         public int submitted;

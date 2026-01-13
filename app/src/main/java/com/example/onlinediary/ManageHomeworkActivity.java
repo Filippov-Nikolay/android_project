@@ -156,9 +156,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
             if (task.subjectName != null && !task.subjectName.trim().isEmpty()) {
                 subjects.add(task.subjectName.trim());
             }
-            if (task.stats != null) {
-                submitted += task.stats.submitted;
-            }
+            submitted += getSubmittedCount(task);
         }
 
         statSubjectsValue.setText(String.valueOf(subjects.size()));
@@ -169,5 +167,15 @@ public class ManageHomeworkActivity extends AppCompatActivity {
     private void toggleEmpty(boolean isEmpty) {
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         tasksList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    private int getSubmittedCount(TeacherTask task) {
+        if (task == null) {
+            return 0;
+        }
+        if (task.stats != null) {
+            return task.stats.submitted;
+        }
+        return task.submissionCount == null ? 0 : task.submissionCount;
     }
 }

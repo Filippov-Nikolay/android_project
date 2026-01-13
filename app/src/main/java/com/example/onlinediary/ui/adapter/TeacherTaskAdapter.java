@@ -56,8 +56,8 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
         holder.titleText.setText(task.title == null ? "Task" : task.title);
         holder.groupText.setText(task.groupName == null ? "Group" : task.groupName);
 
-        int submitted = task.stats == null ? 0 : task.stats.submitted;
-        int total = task.stats == null ? 0 : task.stats.total;
+        int submitted = getSubmittedCount(task);
+        int total = getTotalCount(task);
         int max = Math.max(total, 1);
         int percent = total == 0 ? 0 : Math.round((submitted * 100f) / total);
         holder.progressPercent.setText(percent + "%");
@@ -155,5 +155,25 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
             return "SUBJECT";
         }
         return value.trim().toUpperCase(Locale.US);
+    }
+
+    private int getSubmittedCount(TeacherTask task) {
+        if (task == null) {
+            return 0;
+        }
+        if (task.stats != null) {
+            return task.stats.submitted;
+        }
+        return task.submissionCount == null ? 0 : task.submissionCount;
+    }
+
+    private int getTotalCount(TeacherTask task) {
+        if (task == null) {
+            return 0;
+        }
+        if (task.stats != null) {
+            return task.stats.total;
+        }
+        return task.totalStudents == null ? 0 : task.totalStudents;
     }
 }
