@@ -3,7 +3,8 @@ package com.example.onlinediary.util;
 import android.net.Uri;
 
 public final class ApiUrls {
-    public static final String BASE_URL = "http://10.0.2.2:8080";
+    // EB backend host used for download links
+    public static final String BASE_URL = "http://appjava-env.eba-c47sb33n.eu-west-2.elasticbeanstalk.com";
 
     private ApiUrls() {}
 
