@@ -40,15 +40,6 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <ImageButton
-                    android:id="@+id/btnHomeworkClose"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:background="@drawable/bg_manage_action"
-                    android:contentDescription="Close"
-                    android:scaleType="center"
-                    android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    android:tint="@color/schedule_muted" />
             </LinearLayout>
 
             <TextView
