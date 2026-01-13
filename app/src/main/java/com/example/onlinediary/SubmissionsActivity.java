@@ -1,12 +1,12 @@
 package com.example.onlinediary;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -124,38 +124,42 @@ public class SubmissionsActivity extends AppCompatActivity {
     }
 
     private void showGradeDialog(SubmissionItem item) {
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        int padding = (int) (16 * getResources().getDisplayMetrics().density);
-        layout.setPadding(padding, padding, padding, padding);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_grade_submission, null);
+        TextView gradeInput = dialogView.findViewById(R.id.inputGradeValue);
+        TextView feedbackInput = dialogView.findViewById(R.id.inputGradeFeedback);
+        View btnCancel = dialogView.findViewById(R.id.btnGradeCancel);
+        View btnSave = dialogView.findViewById(R.id.btnGradeSave);
 
-        EditText gradeInput = new EditText(this);
-        gradeInput.setHint("Grade");
-        gradeInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         if (item.grade != null) {
             gradeInput.setText(String.valueOf(item.grade));
         }
-
-        EditText feedbackInput = new EditText(this);
-        feedbackInput.setHint("Feedback");
         if (item.feedback != null) {
             feedbackInput.setText(item.feedback);
         }
 
-        layout.addView(gradeInput);
-        layout.addView(feedbackInput);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
-        new AlertDialog.Builder(this)
-                .setTitle("Grade submission")
-                .setView(layout)
-                .setPositiveButton("Save", (dialog, which) -> {
-                    String gradeText = gradeInput.getText().toString().trim();
-                    int grade = gradeText.isEmpty() ? 0 : Integer.parseInt(gradeText);
-                    String feedback = feedbackInput.getText().toString().trim();
-                    submitGrade(item, grade, feedback);
-                })
-                .setNegativeButton("Cancel", (DialogInterface dialog, int which) -> dialog.dismiss())
-                .show();
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnSave.setOnClickListener(v -> {
+            String gradeText = gradeInput.getText().toString().trim();
+            int grade;
+            try {
+                grade = gradeText.isEmpty() ? 0 : Integer.parseInt(gradeText);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Enter valid grade", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String feedback = feedbackInput.getText().toString().trim();
+            dialog.dismiss();
+            submitGrade(item, grade, feedback);
+        });
+
+        dialog.show();
     }
 
     private void submitGrade(SubmissionItem item, int grade, String feedback) {
