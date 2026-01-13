@@ -1,5 +1,6 @@
 package com.example.onlinediary;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -7,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,7 +34,9 @@ public class UserEditActivity extends AppCompatActivity {
     private EditText emailInput;
     private Spinner roleSpinner;
     private Spinner groupSpinner;
+    private View groupContainer;
     private ProgressBar progressBar;
+    private TextView subtitleText;
     private ApiService apiService;
     private long userId;
     private Long userGroupId;
@@ -42,13 +46,25 @@ public class UserEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_edit);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         firstNameInput = findViewById(R.id.inputEditFirstName);
         lastNameInput = findViewById(R.id.inputEditLastName);
         emailInput = findViewById(R.id.inputEditEmail);
         roleSpinner = findViewById(R.id.spinnerEditRole);
         groupSpinner = findViewById(R.id.spinnerEditGroup);
+        groupContainer = findViewById(R.id.editUserGroupContainer);
         progressBar = findViewById(R.id.userEditProgress);
         Button btnUpdate = findViewById(R.id.btnUpdateUser);
+        Button btnCancel = findViewById(R.id.btnEditUserCancel);
+        subtitleText = findViewById(R.id.editUserSubtitle);
 
         userId = getIntent().getLongExtra("userId", -1);
         if (userId <= 0) {
@@ -57,19 +73,28 @@ public class UserEditActivity extends AppCompatActivity {
             return;
         }
 
-        roleSpinner.setAdapter(new ArrayAdapter<>(
+        subtitleText.setText("Update user data: ID " + userId);
+
+        ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(
                 this,
-                android.R.layout.simple_spinner_dropdown_item,
+                R.layout.item_spinner_dark,
                 new String[]{"STUDENT", "TEACHER", "ADMIN"}
-        ));
+        );
+        roleAdapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        roleSpinner.setAdapter(roleAdapter);
         roleSpinner.setOnItemSelectedListener(new SimpleItemSelectedListener(position -> {
             String role = roleSpinner.getSelectedItem().toString();
-            groupSpinner.setVisibility("STUDENT".equalsIgnoreCase(role) ? View.VISIBLE : View.GONE);
+            boolean showGroup = "STUDENT".equalsIgnoreCase(role);
+            groupContainer.setVisibility(showGroup ? View.VISIBLE : View.GONE);
+            if (!showGroup) {
+                groupSpinner.setSelection(0);
+            }
         }));
 
         apiService = ApiClient.getService(this);
 
         btnUpdate.setOnClickListener(v -> updateUser());
+        btnCancel.setOnClickListener(v -> finish());
 
         loadGroups();
         loadUser();
@@ -116,11 +141,7 @@ public class UserEditActivity extends AppCompatActivity {
                     for (Group group : groups) {
                         names.add(group.name);
                     }
-                    groupSpinner.setAdapter(new ArrayAdapter<>(
-                            UserEditActivity.this,
-                            android.R.layout.simple_spinner_dropdown_item,
-                            names
-                    ));
+                    groupSpinner.setAdapter(createSpinnerAdapter(names, "Select group"));
                     updateGroupSelection();
                 } else {
                     Toast.makeText(UserEditActivity.this, "Failed to load groups", Toast.LENGTH_SHORT).show();
@@ -140,7 +161,7 @@ public class UserEditActivity extends AppCompatActivity {
         }
         for (int i = 0; i < groups.size(); i++) {
             if (groups.get(i).id == userGroupId) {
-                groupSpinner.setSelection(i);
+                groupSpinner.setSelection(i + 1);
                 break;
             }
         }
@@ -153,8 +174,13 @@ public class UserEditActivity extends AppCompatActivity {
         String role = roleSpinner.getSelectedItem().toString();
 
         Long groupId = null;
-        if ("STUDENT".equalsIgnoreCase(role) && !groups.isEmpty()) {
-            groupId = groups.get(groupSpinner.getSelectedItemPosition()).id;
+        if ("STUDENT".equalsIgnoreCase(role)) {
+            int groupIndex = groupSpinner.getSelectedItemPosition() - 1;
+            if (groupIndex < 0 || groupIndex >= groups.size()) {
+                Toast.makeText(this, "Select group", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            groupId = groups.get(groupIndex).id;
         }
 
         UserUpdateRequest request = new UserUpdateRequest(firstName, lastName, email, role, groupId);
@@ -182,5 +208,14 @@ public class UserEditActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private ArrayAdapter<String> createSpinnerAdapter(List<String> items, String placeholder) {
+        List<String> values = new ArrayList<>();
+        values.add(placeholder);
+        values.addAll(items);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, values);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        return adapter;
     }
 }
