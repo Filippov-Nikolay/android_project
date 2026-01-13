@@ -1,11 +1,13 @@
 package com.example.onlinediary;
 
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -20,6 +22,7 @@ import com.example.onlinediary.model.HomeworkItem;
 import com.example.onlinediary.model.Subject;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
+import com.example.onlinediary.util.FileUtils;
 import com.example.onlinediary.util.MultipartUtils;
 
 import java.io.IOException;
@@ -41,22 +44,27 @@ public class HomeworkCreateActivity extends AppCompatActivity {
     private Spinner groupSpinner;
     private EditText titleInput;
     private EditText descriptionInput;
-    private EditText typeInput;
     private EditText deadlineInput;
     private TextView fileLabel;
     private TextView iconLabel;
+    private ImageView iconPreview;
     private ProgressBar progressBar;
 
     private Uri assignmentFile;
     private Uri iconFile;
 
     private ApiService apiService;
+    private static final String DEFAULT_TYPE = "REGULAR";
 
     private final ActivityResultLauncher<String> filePicker = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
                 assignmentFile = uri;
-                fileLabel.setText(uri == null ? "No file selected" : "Assignment file selected");
+                if (uri == null) {
+                    fileLabel.setText("No file selected");
+                } else {
+                    fileLabel.setText(FileUtils.getFileName(this, uri));
+                }
             }
     );
 
@@ -64,7 +72,15 @@ public class HomeworkCreateActivity extends AppCompatActivity {
             new ActivityResultContracts.GetContent(),
             uri -> {
                 iconFile = uri;
-                iconLabel.setText(uri == null ? "No icon selected" : "Icon selected");
+                if (uri == null) {
+                    iconLabel.setText("No icon selected");
+                    iconPreview.setImageResource(android.R.drawable.ic_menu_gallery);
+                    iconPreview.setColorFilter(getColor(R.color.schedule_muted));
+                } else {
+                    iconLabel.setText(FileUtils.getFileName(this, uri));
+                    iconPreview.setColorFilter(null);
+                    iconPreview.setImageURI(uri);
+                }
             }
     );
 
@@ -73,25 +89,36 @@ public class HomeworkCreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homework_create);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         subjectSpinner = findViewById(R.id.spinnerSubject);
         groupSpinner = findViewById(R.id.spinnerGroup);
         titleInput = findViewById(R.id.inputHomeworkTitle);
         descriptionInput = findViewById(R.id.inputHomeworkDescription);
-        typeInput = findViewById(R.id.inputHomeworkType);
         deadlineInput = findViewById(R.id.inputHomeworkDeadline);
         fileLabel = findViewById(R.id.labelHomeworkFile);
         iconLabel = findViewById(R.id.labelHomeworkIcon);
+        iconPreview = findViewById(R.id.homeworkIconPreview);
         progressBar = findViewById(R.id.homeworkCreateProgress);
-
-        typeInput.setText("REGULAR");
 
         Button btnPickFile = findViewById(R.id.btnPickHomeworkFile);
         Button btnPickIcon = findViewById(R.id.btnPickHomeworkIcon);
         Button btnCreate = findViewById(R.id.btnSubmitHomeworkCreate);
+        View btnCancel = findViewById(R.id.btnHomeworkCancel);
+        View btnClose = findViewById(R.id.btnHomeworkClose);
 
         btnPickFile.setOnClickListener(v -> filePicker.launch("*/*"));
         btnPickIcon.setOnClickListener(v -> iconPicker.launch("image/*"));
         btnCreate.setOnClickListener(v -> createHomework());
+        btnCancel.setOnClickListener(v -> finish());
+        btnClose.setOnClickListener(v -> finish());
 
         apiService = ApiClient.getService(this);
 
@@ -110,11 +137,7 @@ public class HomeworkCreateActivity extends AppCompatActivity {
                     for (Subject subject : subjects) {
                         names.add(subject.name);
                     }
-                    subjectSpinner.setAdapter(new ArrayAdapter<>(
-                            HomeworkCreateActivity.this,
-                            android.R.layout.simple_spinner_dropdown_item,
-                            names
-                    ));
+                    subjectSpinner.setAdapter(createSpinnerAdapter(names, "Select subject"));
                 } else {
                     Toast.makeText(HomeworkCreateActivity.this, "Failed to load subjects", Toast.LENGTH_SHORT).show();
                 }
@@ -138,11 +161,7 @@ public class HomeworkCreateActivity extends AppCompatActivity {
                     for (Group group : groups) {
                         names.add(group.name);
                     }
-                    groupSpinner.setAdapter(new ArrayAdapter<>(
-                            HomeworkCreateActivity.this,
-                            android.R.layout.simple_spinner_dropdown_item,
-                            names
-                    ));
+                    groupSpinner.setAdapter(createSpinnerAdapter(names, "Select group"));
                 } else {
                     Toast.makeText(HomeworkCreateActivity.this, "Failed to load groups", Toast.LENGTH_SHORT).show();
                 }
@@ -158,20 +177,20 @@ public class HomeworkCreateActivity extends AppCompatActivity {
     private void createHomework() {
         String title = titleInput.getText().toString().trim();
         String description = descriptionInput.getText().toString().trim();
-        String type = typeInput.getText().toString().trim();
         String deadline = deadlineInput.getText().toString().trim();
 
-        if (title.isEmpty() || subjects.isEmpty() || groups.isEmpty() || deadline.isEmpty()) {
+        int subjectIndex = subjectSpinner.getSelectedItemPosition() - 1;
+        int groupIndex = groupSpinner.getSelectedItemPosition() - 1;
+
+        if (title.isEmpty() || deadline.isEmpty() || subjectIndex < 0 || groupIndex < 0) {
             Toast.makeText(this, "Fill required fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (type.isEmpty()) {
-            type = "REGULAR";
-        }
+        String type = DEFAULT_TYPE;
 
-        Subject subject = subjects.get(subjectSpinner.getSelectedItemPosition());
-        Group group = groups.get(groupSpinner.getSelectedItemPosition());
+        Subject subject = subjects.get(subjectIndex);
+        Group group = groups.get(groupIndex);
 
         Map<String, RequestBody> fields = new HashMap<>();
         fields.put("title", MultipartUtils.toTextBody(title));
@@ -217,5 +236,14 @@ public class HomeworkCreateActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private ArrayAdapter<String> createSpinnerAdapter(List<String> items, String placeholder) {
+        List<String> values = new ArrayList<>();
+        values.add(placeholder);
+        values.addAll(items);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, values);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        return adapter;
     }
 }
