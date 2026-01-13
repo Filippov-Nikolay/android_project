@@ -1,5 +1,6 @@
 package com.example.onlinediary.ui.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,10 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 import com.example.onlinediary.R;
+import com.example.onlinediary.core.AuthStore;
 import com.example.onlinediary.model.HomeworkItem;
 import com.example.onlinediary.util.ApiUrls;
 
@@ -59,7 +63,7 @@ public class HomeworkAdapter extends RecyclerView.Adapter<HomeworkAdapter.ViewHo
         holder.deadlineText.setText("Due: " + dateOnly(item.deadline));
 
         applyStatus(holder.statusText, item.status);
-        bindIcon(holder.iconView, item.iconFileName);
+        bindIcon(holder.iconView, item.iconFileName, item.fileName);
 
         holder.itemView.setOnClickListener(v -> listener.onHomeworkClick(item));
     }
@@ -105,11 +109,11 @@ public class HomeworkAdapter extends RecyclerView.Adapter<HomeworkAdapter.ViewHo
         }
     }
 
-    private void bindIcon(ImageView imageView, String iconFileName) {
+    private void bindIcon(ImageView imageView, String iconFileName, String fileName) {
         if (imageView == null) {
             return;
         }
-        String url = buildIconUrl(iconFileName);
+        String url = buildIconUrl(iconFileName, fileName);
         if (url == null) {
             imageView.setImageResource(android.R.drawable.ic_menu_gallery);
             imageView.setColorFilter(ContextCompat.getColor(imageView.getContext(), R.color.schedule_muted));
@@ -117,23 +121,61 @@ public class HomeworkAdapter extends RecyclerView.Adapter<HomeworkAdapter.ViewHo
         }
         imageView.setColorFilter(null);
         Glide.with(imageView.getContext())
-                .load(url)
+                .load(buildGlideModel(imageView.getContext(), url))
                 .placeholder(android.R.drawable.ic_menu_gallery)
                 .into(imageView);
     }
 
-    private String buildIconUrl(String iconFileName) {
-        if (iconFileName == null) {
+    private String buildIconUrl(String iconFileName, String fileName) {
+        String iconUrl = buildDownloadUrl(iconFileName);
+        if (iconUrl != null) {
+            return iconUrl;
+        }
+        if (isImageFile(fileName)) {
+            return buildDownloadUrl(fileName);
+        }
+        return null;
+    }
+
+    private String buildDownloadUrl(String fileName) {
+        if (fileName == null) {
             return null;
         }
-        String trimmed = iconFileName.trim();
+        String trimmed = fileName.trim();
         if (trimmed.isEmpty()) {
             return null;
         }
         if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
             return trimmed;
         }
+        if (trimmed.startsWith("/api/") || trimmed.startsWith("api/")) {
+            String path = trimmed.startsWith("/") ? trimmed : "/" + trimmed;
+            return ApiUrls.BASE_URL + path;
+        }
         return ApiUrls.fileDownloadUrl(trimmed);
+    }
+
+    private boolean isImageFile(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return false;
+        }
+        String lower = fileName.trim().toLowerCase(Locale.US);
+        return lower.endsWith(".png")
+                || lower.endsWith(".jpg")
+                || lower.endsWith(".jpeg")
+                || lower.endsWith(".gif")
+                || lower.endsWith(".webp")
+                || lower.endsWith(".svg");
+    }
+
+    private Object buildGlideModel(Context context, String url) {
+        String token = new AuthStore(context).getToken();
+        if (token == null || token.trim().isEmpty()) {
+            return url;
+        }
+        return new GlideUrl(url, new LazyHeaders.Builder()
+                .addHeader("Authorization", "Bearer " + token)
+                .build());
     }
 
     private String dateOnly(String value) {

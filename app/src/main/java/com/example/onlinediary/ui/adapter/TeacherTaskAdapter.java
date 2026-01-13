@@ -1,5 +1,6 @@
 package com.example.onlinediary.ui.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 import com.example.onlinediary.R;
+import com.example.onlinediary.core.AuthStore;
 import com.example.onlinediary.model.TeacherTask;
 import com.example.onlinediary.util.ApiUrls;
 
@@ -91,7 +95,7 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
         if (iconUrl != null) {
             holder.iconView.setColorFilter(null);
             Glide.with(holder.itemView)
-                    .load(iconUrl)
+                    .load(buildGlideModel(holder.itemView.getContext(), iconUrl))
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .into(holder.iconView);
         } else {
@@ -167,7 +171,21 @@ public class TeacherTaskAdapter extends RecyclerView.Adapter<TeacherTaskAdapter.
         if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
             return trimmed;
         }
+        if (trimmed.startsWith("/api/") || trimmed.startsWith("api/")) {
+            String path = trimmed.startsWith("/") ? trimmed : "/" + trimmed;
+            return ApiUrls.BASE_URL + path;
+        }
         return ApiUrls.fileDownloadUrl(trimmed);
+    }
+
+    private Object buildGlideModel(Context context, String url) {
+        String token = new AuthStore(context).getToken();
+        if (token == null || token.trim().isEmpty()) {
+            return url;
+        }
+        return new GlideUrl(url, new LazyHeaders.Builder()
+                .addHeader("Authorization", "Bearer " + token)
+                .build());
     }
 
     private int getSubmittedCount(TeacherTask task) {

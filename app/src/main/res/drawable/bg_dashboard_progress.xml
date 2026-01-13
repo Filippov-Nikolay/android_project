@@ -7,9 +7,13 @@
         </shape>
     </item>
     <item android:id="@android:id/progress">
-        <shape>
-            <corners android:radius="6dp" />
-            <solid android:color="@color/schedule_accent" />
-        </shape>
+        <clip
+            android:clipOrientation="horizontal"
+            android:gravity="left">
+            <shape>
+                <corners android:radius="6dp" />
+                <solid android:color="@color/schedule_accent" />
+            </shape>
+        </clip>
     </item>
 </layer-list>

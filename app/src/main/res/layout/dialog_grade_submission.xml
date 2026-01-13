@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/schedule_surface"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="10dp"
+    app:strokeColor="@color/schedule_line"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <TextView
+            android:id="@+id/gradeDialogTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Grade submission"
+            android:textColor="@color/schedule_text"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Grade"
+            android:textColor="@color/schedule_muted"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/inputGradeValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_form_input"
+            android:hint="Enter grade"
+            android:inputType="number"
+            android:padding="12dp"
+            android:textColor="@color/schedule_text"
+            android:textColorHint="@color/schedule_muted" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Feedback"
+            android:textColor="@color/schedule_muted"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/inputGradeFeedback"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_form_input"
+            android:hint="Write feedback"
+            android:inputType="textMultiLine"
+            android:minLines="2"
+            android:padding="12dp"
+            android:textColor="@color/schedule_text"
+            android:textColorHint="@color/schedule_muted" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGradeCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:textAllCaps="false"
+                android:textColor="@color/schedule_text"
+                app:backgroundTint="@color/schedule_surface_muted"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGradeSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Save"
+                android:textAllCaps="false"
+                android:textColor="@color/schedule_background"
+                app:backgroundTint="@color/schedule_accent"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

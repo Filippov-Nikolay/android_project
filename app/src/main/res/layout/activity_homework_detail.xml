@@ -257,6 +257,69 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/homeworkPendingCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone"
+                        app:cardBackgroundColor="@color/schedule_surface_muted"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/schedule_line"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="18dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:contentDescription="In review"
+                                android:src="@android:drawable/ic_menu_recent_history"
+                                android:tint="@color/schedule_muted" />
+
+                            <TextView
+                                android:id="@+id/homeworkPendingTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:text="In review"
+                                android:textColor="@color/schedule_text"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/homeworkPendingSubtitle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:gravity="center"
+                                android:text="You already submitted this homework. Cancel the submission to update it."
+                                android:textColor="@color/schedule_muted"
+                                android:textSize="12sp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnCancelSubmission"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:text="Cancel submission"
+                                android:textAllCaps="false"
+                                android:textColor="@color/schedule_background"
+                                app:backgroundTint="@color/schedule_accent"
+                                app:cornerRadius="12dp"
+                                app:icon="@android:drawable/ic_menu_close_clear_cancel"
+                                app:iconGravity="textStart"
+                                app:iconPadding="8dp"
+                                app:iconTint="@color/schedule_background" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
                     <LinearLayout
                         android:id="@+id/detailGradeContainer"
                         android:layout_width="match_parent"
@@ -391,17 +454,6 @@
                         android:textColor="@color/schedule_background"
                         app:backgroundTint="@color/schedule_accent"
                         app:cornerRadius="14dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnCancelSubmission"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Cancel submission"
-                        android:textAllCaps="false"
-                        android:textColor="@color/schedule_text"
-                        app:backgroundTint="@color/schedule_surface_muted"
-                        app:cornerRadius="12dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBackToList"
