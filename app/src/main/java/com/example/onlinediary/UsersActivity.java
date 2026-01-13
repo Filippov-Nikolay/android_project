@@ -1,10 +1,11 @@
 package com.example.onlinediary;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,16 +28,28 @@ public class UsersActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private UserAdapter adapter;
     private ApiService apiService;
+    private TextView emptyText;
+    private RecyclerView usersList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_users);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         progressBar = findViewById(R.id.usersProgress);
-        Button btnCreate = findViewById(R.id.btnCreateUser);
-        RecyclerView recyclerView = findViewById(R.id.usersList);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        emptyText = findViewById(R.id.usersEmpty);
+        View btnCreate = findViewById(R.id.btnCreateUser);
+        usersList = findViewById(R.id.usersList);
+        usersList.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new UserAdapter(new UserAdapter.UserActionListener() {
             @Override
@@ -51,7 +64,7 @@ public class UsersActivity extends AppCompatActivity {
                 deleteUser(user.id);
             }
         });
-        recyclerView.setAdapter(adapter);
+        usersList.setAdapter(adapter);
 
         btnCreate.setOnClickListener(v -> startActivity(new Intent(UsersActivity.this, UserCreateActivity.class)));
 
@@ -72,8 +85,10 @@ public class UsersActivity extends AppCompatActivity {
                 setLoading(false);
                 if (response.isSuccessful() && response.body() != null) {
                     adapter.setItems(response.body());
+                    toggleEmpty(response.body().isEmpty());
                 } else {
                     Toast.makeText(UsersActivity.this, "Failed to load users", Toast.LENGTH_SHORT).show();
+                    toggleEmpty(true);
                 }
             }
 
@@ -81,6 +96,7 @@ public class UsersActivity extends AppCompatActivity {
             public void onFailure(Call<List<User>> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(UsersActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+                toggleEmpty(true);
             }
         });
     }
@@ -108,5 +124,10 @@ public class UsersActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void toggleEmpty(boolean isEmpty) {
+        emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        usersList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 }

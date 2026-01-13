@@ -2,11 +2,16 @@ package com.example.onlinediary;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,11 +25,17 @@ import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.ScheduleAdminAdapter;
 import com.example.onlinediary.util.MultipartUtils;
+import com.example.onlinediary.util.SimpleItemSelectedListener;
+import com.example.onlinediary.util.SimpleTextWatcher;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
 
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
@@ -36,6 +47,14 @@ public class ScheduleAdminActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ScheduleAdminAdapter adapter;
     private ApiService apiService;
+    private TextView subtitleText;
+    private TextView emptyState;
+    private EditText searchInput;
+    private Spinner groupFilter;
+    private Spinner subjectFilter;
+    private final List<ScheduleEvent> allItems = new ArrayList<>();
+    private List<String> groupOptions = new ArrayList<>();
+    private List<String> subjectOptions = new ArrayList<>();
 
     private final ActivityResultLauncher<String> importPicker = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -47,7 +66,21 @@ public class ScheduleAdminActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_admin);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         progressBar = findViewById(R.id.scheduleAdminProgress);
+        subtitleText = findViewById(R.id.scheduleAdminSubtitle);
+        emptyState = findViewById(R.id.scheduleAdminEmpty);
+        searchInput = findViewById(R.id.inputScheduleSearch);
+        groupFilter = findViewById(R.id.spinnerScheduleGroupFilter);
+        subjectFilter = findViewById(R.id.spinnerScheduleSubjectFilter);
         Button btnCreate = findViewById(R.id.btnCreateSchedule);
         Button btnImport = findViewById(R.id.btnImportSchedule);
         Button btnExport = findViewById(R.id.btnExportSchedule);
@@ -74,6 +107,7 @@ public class ScheduleAdminActivity extends AppCompatActivity {
         btnExport.setOnClickListener(v -> exportSchedule());
 
         apiService = ApiClient.getService(this);
+        setupFilters();
     }
 
     @Override
@@ -89,7 +123,10 @@ public class ScheduleAdminActivity extends AppCompatActivity {
             public void onResponse(Call<List<ScheduleEvent>> call, Response<List<ScheduleEvent>> response) {
                 setLoading(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    adapter.setItems(response.body());
+                    allItems.clear();
+                    allItems.addAll(response.body());
+                    updateFilterOptions();
+                    applyFilters();
                 } else {
                     Toast.makeText(ScheduleAdminActivity.this, "Failed to load schedule", Toast.LENGTH_SHORT).show();
                 }
@@ -189,5 +226,128 @@ public class ScheduleAdminActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void setupFilters() {
+        ArrayAdapter<String> groupAdapter = createSpinnerAdapter(new ArrayList<>(), "All groups");
+        ArrayAdapter<String> subjectAdapter = createSpinnerAdapter(new ArrayList<>(), "All subjects");
+        groupFilter.setAdapter(groupAdapter);
+        subjectFilter.setAdapter(subjectAdapter);
+
+        searchInput.addTextChangedListener(new SimpleTextWatcher(text -> applyFilters()));
+        groupFilter.setOnItemSelectedListener(new SimpleItemSelectedListener(position -> applyFilters()));
+        subjectFilter.setOnItemSelectedListener(new SimpleItemSelectedListener(position -> applyFilters()));
+    }
+
+    private void updateFilterOptions() {
+        String selectedGroup = getSelected(groupFilter, groupOptions);
+        String selectedSubject = getSelected(subjectFilter, subjectOptions);
+
+        Set<String> groupSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        Set<String> subjectSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (ScheduleEvent event : allItems) {
+            if (event.groupName != null && !event.groupName.trim().isEmpty()) {
+                groupSet.add(event.groupName.trim());
+            }
+            if (event.subjectName != null && !event.subjectName.trim().isEmpty()) {
+                subjectSet.add(event.subjectName.trim());
+            }
+        }
+
+        groupOptions = new ArrayList<>(groupSet);
+        subjectOptions = new ArrayList<>(subjectSet);
+
+        groupFilter.setAdapter(createSpinnerAdapter(groupOptions, "All groups"));
+        subjectFilter.setAdapter(createSpinnerAdapter(subjectOptions, "All subjects"));
+
+        restoreSelection(groupFilter, groupOptions, selectedGroup);
+        restoreSelection(subjectFilter, subjectOptions, selectedSubject);
+    }
+
+    private void applyFilters() {
+        if (adapter == null) {
+            return;
+        }
+        String query = searchInput.getText().toString().trim().toLowerCase(Locale.US);
+        String group = getSelected(groupFilter, groupOptions);
+        String subject = getSelected(subjectFilter, subjectOptions);
+
+        List<ScheduleEvent> filtered = new ArrayList<>();
+        for (ScheduleEvent event : allItems) {
+            if (group != null && !equalsIgnoreCase(event.groupName, group)) {
+                continue;
+            }
+            if (subject != null && !equalsIgnoreCase(event.subjectName, subject)) {
+                continue;
+            }
+            if (!query.isEmpty() && !matchesQuery(event, query)) {
+                continue;
+            }
+            filtered.add(event);
+        }
+
+        adapter.setItems(filtered);
+        if (subtitleText != null) {
+            subtitleText.setText("Found lessons: " + filtered.size());
+        }
+        if (emptyState != null) {
+            emptyState.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private boolean matchesQuery(ScheduleEvent event, String query) {
+        if (event == null) {
+            return false;
+        }
+        return contains(event.subjectName, query)
+                || contains(event.teacherFullName, query)
+                || contains(event.groupName, query)
+                || contains(event.room, query)
+                || contains(event.type, query)
+                || contains(event.date, query)
+                || String.valueOf(event.lessonNumber).contains(query);
+    }
+
+    private boolean contains(String value, String query) {
+        return value != null && value.toLowerCase(Locale.US).contains(query);
+    }
+
+    private boolean equalsIgnoreCase(String left, String right) {
+        if (left == null || right == null) {
+            return false;
+        }
+        return left.trim().equalsIgnoreCase(right.trim());
+    }
+
+    private ArrayAdapter<String> createSpinnerAdapter(List<String> items, String placeholder) {
+        List<String> values = new ArrayList<>();
+        values.add(placeholder);
+        values.addAll(items);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, values);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        return adapter;
+    }
+
+    private String getSelected(Spinner spinner, List<String> options) {
+        if (spinner == null || options == null) {
+            return null;
+        }
+        int position = spinner.getSelectedItemPosition();
+        if (position <= 0 || position - 1 >= options.size()) {
+            return null;
+        }
+        return options.get(position - 1);
+    }
+
+    private void restoreSelection(Spinner spinner, List<String> options, String selected) {
+        if (spinner == null || options == null || selected == null) {
+            return;
+        }
+        for (int i = 0; i < options.size(); i++) {
+            if (selected.equalsIgnoreCase(options.get(i))) {
+                spinner.setSelection(i + 1);
+                return;
+            }
+        }
     }
 }

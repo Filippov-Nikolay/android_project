@@ -1,10 +1,11 @@
 package com.example.onlinediary;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,16 +28,36 @@ public class ManageHomeworkActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TeacherTaskAdapter adapter;
     private ApiService apiService;
+    private TextView statSubjectsValue;
+    private TextView statUpcomingValue;
+    private TextView statSubmittedValue;
+    private TextView emptyText;
+    private RecyclerView tasksList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_homework);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         progressBar = findViewById(R.id.manageHomeworkProgress);
-        Button btnCreate = findViewById(R.id.btnCreateHomework);
-        RecyclerView recyclerView = findViewById(R.id.teacherTasksList);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        statSubjectsValue = findViewById(R.id.manageStatSubjectsValue);
+        statUpcomingValue = findViewById(R.id.manageStatUpcomingValue);
+        statSubmittedValue = findViewById(R.id.manageStatSubmittedValue);
+        emptyText = findViewById(R.id.manageHomeworkEmpty);
+
+        View btnCreate = findViewById(R.id.btnCreateHomework);
+        tasksList = findViewById(R.id.teacherTasksList);
+        tasksList.setLayoutManager(new LinearLayoutManager(this));
+        tasksList.setNestedScrollingEnabled(false);
 
         adapter = new TeacherTaskAdapter(new TeacherTaskAdapter.TaskActionListener() {
             @Override
@@ -51,7 +72,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
                 deleteTask(task.id);
             }
         });
-        recyclerView.setAdapter(adapter);
+        tasksList.setAdapter(adapter);
 
         btnCreate.setOnClickListener(v -> {
             startActivity(new Intent(ManageHomeworkActivity.this, HomeworkCreateActivity.class));
@@ -73,9 +94,13 @@ public class ManageHomeworkActivity extends AppCompatActivity {
             public void onResponse(Call<List<TeacherTask>> call, Response<List<TeacherTask>> response) {
                 setLoading(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    adapter.setItems(response.body());
+                    List<TeacherTask> tasks = response.body();
+                    adapter.setItems(tasks);
+                    updateStats(tasks);
+                    toggleEmpty(tasks == null || tasks.isEmpty());
                 } else {
                     Toast.makeText(ManageHomeworkActivity.this, "Failed to load tasks", Toast.LENGTH_SHORT).show();
+                    toggleEmpty(true);
                 }
             }
 
@@ -83,6 +108,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
             public void onFailure(Call<List<TeacherTask>> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(ManageHomeworkActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+                toggleEmpty(true);
             }
         });
     }
@@ -110,5 +136,38 @@ public class ManageHomeworkActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateStats(List<TeacherTask> tasks) {
+        if (tasks == null || tasks.isEmpty()) {
+            statSubjectsValue.setText("0");
+            statUpcomingValue.setText("0");
+            statSubmittedValue.setText("0");
+            return;
+        }
+
+        int upcoming = 0;
+        int submitted = 0;
+        java.util.HashSet<String> subjects = new java.util.HashSet<>();
+        for (TeacherTask task : tasks) {
+            if (!task.isOverdue) {
+                upcoming++;
+            }
+            if (task.subjectName != null && !task.subjectName.trim().isEmpty()) {
+                subjects.add(task.subjectName.trim());
+            }
+            if (task.stats != null) {
+                submitted += task.stats.submitted;
+            }
+        }
+
+        statSubjectsValue.setText(String.valueOf(subjects.size()));
+        statUpcomingValue.setText(String.valueOf(upcoming));
+        statSubmittedValue.setText(String.valueOf(submitted));
+    }
+
+    private void toggleEmpty(boolean isEmpty) {
+        emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        tasksList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 }

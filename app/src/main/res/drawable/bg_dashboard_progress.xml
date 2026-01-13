@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape>
+            <corners android:radius="6dp" />
+            <solid android:color="@color/schedule_surface_muted" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <shape>
+            <corners android:radius="6dp" />
+            <solid android:color="@color/schedule_accent" />
+        </shape>
+    </item>
+</layer-list>

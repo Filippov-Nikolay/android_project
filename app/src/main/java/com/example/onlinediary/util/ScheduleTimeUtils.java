@@ -4,11 +4,13 @@ import com.example.onlinediary.model.ScheduleEvent;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class ScheduleTimeUtils {
     private static final int DEFAULT_DURATION_MINUTES = 80;
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
     private static final Map<Integer, LocalTime> START_TIMES = new HashMap<>();
     private static final Map<Integer, LocalTime> END_TIMES = new HashMap<>();
 
@@ -98,5 +100,14 @@ public final class ScheduleTimeUtils {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static String getTimeRangeLabel(int lessonNumber) {
+        LocalTime start = START_TIMES.get(lessonNumber);
+        LocalTime end = END_TIMES.get(lessonNumber);
+        if (start == null || end == null) {
+            return "";
+        }
+        return TIME_FORMAT.format(start) + "-" + TIME_FORMAT.format(end);
     }
 }

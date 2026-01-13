@@ -1,10 +1,10 @@
 package com.example.onlinediary;
 
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -44,6 +44,7 @@ public class UserCreateActivity extends AppCompatActivity {
     private EditText lastNameInput;
     private EditText passwordInput;
     private TextView avatarLabel;
+    private View groupContainer;
     private ProgressBar progressBar;
     private Uri avatarUri;
     private ApiService apiService;
@@ -61,6 +62,15 @@ public class UserCreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_create);
 
+        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
+        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
         roleSpinner = findViewById(R.id.spinnerUserRole);
         groupSpinner = findViewById(R.id.spinnerUserGroup);
         loginInput = findViewById(R.id.inputUserLogin);
@@ -69,23 +79,28 @@ public class UserCreateActivity extends AppCompatActivity {
         lastNameInput = findViewById(R.id.inputUserLastName);
         passwordInput = findViewById(R.id.inputUserPassword);
         avatarLabel = findViewById(R.id.labelAvatar);
+        groupContainer = findViewById(R.id.userGroupContainer);
         progressBar = findViewById(R.id.userCreateProgress);
 
-        roleSpinner.setAdapter(new ArrayAdapter<>(
+        ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(
                 this,
-                android.R.layout.simple_spinner_dropdown_item,
+                R.layout.item_spinner_dark,
                 new String[]{"STUDENT", "TEACHER", "ADMIN"}
-        ));
+        );
+        roleAdapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+        roleSpinner.setAdapter(roleAdapter);
         roleSpinner.setOnItemSelectedListener(new SimpleItemSelectedListener(position -> {
             String role = roleSpinner.getSelectedItem().toString();
-            groupSpinner.setVisibility("STUDENT".equalsIgnoreCase(role) ? View.VISIBLE : View.GONE);
+            groupContainer.setVisibility("STUDENT".equalsIgnoreCase(role) ? View.VISIBLE : View.GONE);
         }));
 
-        Button btnPickAvatar = findViewById(R.id.btnPickAvatar);
-        Button btnCreate = findViewById(R.id.btnCreateUserSubmit);
+        View btnPickAvatar = findViewById(R.id.btnPickAvatar);
+        View btnCreate = findViewById(R.id.btnCreateUserSubmit);
+        View btnCancel = findViewById(R.id.btnCreateUserCancel);
 
         btnPickAvatar.setOnClickListener(v -> avatarPicker.launch("image/*"));
         btnCreate.setOnClickListener(v -> createUser());
+        btnCancel.setOnClickListener(v -> finish());
 
         apiService = ApiClient.getService(this);
         loadGroups();
@@ -102,11 +117,13 @@ public class UserCreateActivity extends AppCompatActivity {
                     for (Group group : groups) {
                         names.add(group.name);
                     }
-                    groupSpinner.setAdapter(new ArrayAdapter<>(
+                    ArrayAdapter<String> groupAdapter = new ArrayAdapter<>(
                             UserCreateActivity.this,
-                            android.R.layout.simple_spinner_dropdown_item,
+                            R.layout.item_spinner_dark,
                             names
-                    ));
+                    );
+                    groupAdapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
+                    groupSpinner.setAdapter(groupAdapter);
                 } else {
                     Toast.makeText(UserCreateActivity.this, "Failed to load groups", Toast.LENGTH_SHORT).show();
                 }

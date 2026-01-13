@@ -60,6 +60,13 @@
             android:text="Manage Homework" />
 
         <Button
+            android:id="@+id/btnAdminStats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Admin statistics" />
+
+        <Button
             android:id="@+id/btnUsers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
