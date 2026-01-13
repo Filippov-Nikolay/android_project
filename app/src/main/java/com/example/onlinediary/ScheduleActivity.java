@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,11 +20,13 @@ import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.CalendarAdapter;
 import com.example.onlinediary.ui.model.CalendarDay;
 import com.example.onlinediary.ui.view.ScheduleTimelineLayout;
+import com.example.onlinediary.util.ScheduleTimeUtils;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +41,8 @@ import retrofit2.Response;
 public class ScheduleActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView monthTitle;
+    private ImageButton btnListMode;
+    private ImageButton btnCalendarMode;
     private RecyclerView calendarGrid;
     private ScheduleTimelineLayout timelineView;
     private CalendarAdapter calendarAdapter;
@@ -50,8 +55,14 @@ public class ScheduleActivity extends AppCompatActivity {
     private boolean showMonthView = true;
     private boolean canSeeJournal;
 
+    private static final Locale SCHEDULE_LOCALE = new Locale("uk");
     private static final DateTimeFormatter MONTH_FORMAT =
-            DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
+            DateTimeFormatter.ofPattern("LLLL yyyy", SCHEDULE_LOCALE);
+    private static final DateTimeFormatter WEEK_FORMAT =
+            DateTimeFormatter.ofPattern("d MMM", SCHEDULE_LOCALE);
+    private static final int DOT_LECTURE = 1;
+    private static final int DOT_PRACTICE = 1 << 1;
+    private static final int DOT_EXAM = 1 << 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +82,8 @@ public class ScheduleActivity extends AppCompatActivity {
         monthTitle = findViewById(R.id.scheduleMonthTitle);
         calendarGrid = findViewById(R.id.scheduleCalendarGrid);
         timelineView = findViewById(R.id.scheduleTimeline);
+        btnListMode = findViewById(R.id.btnListMode);
+        btnCalendarMode = findViewById(R.id.btnCalendarMode);
 
         AuthStore authStore = new AuthStore(this);
         String role = authStore.getRole() == null ? "" : authStore.getRole();
@@ -86,10 +99,10 @@ public class ScheduleActivity extends AppCompatActivity {
 
         findViewById(R.id.btnPrevMonth).setOnClickListener(v -> moveMonth(-1));
         findViewById(R.id.btnNextMonth).setOnClickListener(v -> moveMonth(1));
-        findViewById(R.id.btnListMode).setOnClickListener(v -> setCalendarMode(false));
-        findViewById(R.id.btnCalendarMode).setOnClickListener(v -> setCalendarMode(true));
+        btnListMode.setOnClickListener(v -> setCalendarMode(false));
+        btnCalendarMode.setOnClickListener(v -> setCalendarMode(true));
 
-        timelineView.setHourRange(8, 19);
+        timelineView.setHourRange(8, 18);
         timelineView.setSelectedDate(selectedDate);
         timelineView.setOnEventClickListener(event -> {
             if (!canSeeJournal) {
@@ -101,6 +114,8 @@ public class ScheduleActivity extends AppCompatActivity {
         });
 
         apiService = ApiClient.getService(this);
+        setupWeekdayLabels();
+        updateViewToggle();
         updateCalendar();
     }
 
@@ -140,9 +155,14 @@ public class ScheduleActivity extends AppCompatActivity {
     }
 
     private void moveMonth(int offset) {
-        currentMonth = currentMonth.plusMonths(offset).withDayOfMonth(1);
-        if (!selectedDate.getMonth().equals(currentMonth.getMonth())) {
-            selectedDate = currentMonth.withDayOfMonth(1);
+        if (showMonthView) {
+            currentMonth = currentMonth.plusMonths(offset).withDayOfMonth(1);
+            if (!selectedDate.getMonth().equals(currentMonth.getMonth())) {
+                selectedDate = currentMonth.withDayOfMonth(1);
+            }
+        } else {
+            selectedDate = selectedDate.plusWeeks(offset);
+            currentMonth = selectedDate.withDayOfMonth(1);
         }
         updateCalendar();
         updateTimeline();
@@ -150,6 +170,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
     private void setCalendarMode(boolean showMonth) {
         showMonthView = showMonth;
+        updateViewToggle();
         updateCalendar();
     }
 
@@ -161,8 +182,7 @@ public class ScheduleActivity extends AppCompatActivity {
     }
 
     private void updateCalendar() {
-        LocalDate titleDate = showMonthView ? currentMonth : selectedDate.withDayOfMonth(1);
-        monthTitle.setText(MONTH_FORMAT.format(titleDate));
+        monthTitle.setText(formatTitle());
         List<CalendarDay> days = showMonthView ? buildMonthDays(currentMonth) : buildWeekDays(selectedDate);
         calendarAdapter.setDays(days);
     }
@@ -181,10 +201,13 @@ public class ScheduleActivity extends AppCompatActivity {
         for (int i = 0; i < 42; i++) {
             LocalDate date = start.plusDays(i);
             boolean inMonth = date.getMonth().equals(month.getMonth());
-            boolean hasEvents = eventsByDate.containsKey(date);
+            int mask = getDotMask(date);
+            boolean hasLecture = (mask & DOT_LECTURE) != 0;
+            boolean hasPractice = (mask & DOT_PRACTICE) != 0;
+            boolean hasExam = (mask & DOT_EXAM) != 0;
             boolean selected = date.equals(selectedDate);
             boolean today = date.equals(LocalDate.now());
-            days.add(new CalendarDay(date, inMonth, hasEvents, selected, today));
+            days.add(new CalendarDay(date, inMonth, hasLecture, hasPractice, hasExam, selected, today));
         }
         return days;
     }
@@ -197,10 +220,13 @@ public class ScheduleActivity extends AppCompatActivity {
         for (int i = 0; i < 7; i++) {
             LocalDate date = start.plusDays(i);
             boolean inMonth = date.getMonth().equals(anchor.getMonth());
-            boolean hasEvents = eventsByDate.containsKey(date);
+            int mask = getDotMask(date);
+            boolean hasLecture = (mask & DOT_LECTURE) != 0;
+            boolean hasPractice = (mask & DOT_PRACTICE) != 0;
+            boolean hasExam = (mask & DOT_EXAM) != 0;
             boolean selected = date.equals(selectedDate);
             boolean today = date.equals(LocalDate.now());
-            days.add(new CalendarDay(date, inMonth, hasEvents, selected, today));
+            days.add(new CalendarDay(date, inMonth, hasLecture, hasPractice, hasExam, selected, today));
         }
         return days;
     }
@@ -212,7 +238,7 @@ public class ScheduleActivity extends AppCompatActivity {
     private void rebuildEventIndex() {
         eventsByDate.clear();
         for (ScheduleEvent event : allEvents) {
-            LocalDate date = parseDate(event.date);
+            LocalDate date = ScheduleTimeUtils.parseDate(event.date);
             if (date == null) {
                 continue;
             }
@@ -227,58 +253,110 @@ public class ScheduleActivity extends AppCompatActivity {
             return Collections.emptyList();
         }
         List<ScheduleEvent> copy = new ArrayList<>(list);
-        copy.sort((a, b) -> parseEventStart(a).compareTo(parseEventStart(b)));
+        copy.sort((a, b) -> {
+            LocalTime timeA = ScheduleTimeUtils.getStartTime(a);
+            LocalTime timeB = ScheduleTimeUtils.getStartTime(b);
+            if (timeA == null && timeB == null) {
+                return 0;
+            }
+            if (timeA == null) {
+                return 1;
+            }
+            if (timeB == null) {
+                return -1;
+            }
+            return timeA.compareTo(timeB);
+        });
         return copy;
     }
 
-    private LocalDate parseDate(String value) {
-        if (value == null || value.length() < 10) {
-            return null;
+    private int getDotMask(LocalDate date) {
+        List<ScheduleEvent> list = eventsByDate.get(date);
+        if (list == null || list.isEmpty()) {
+            return 0;
         }
-        String text = value;
-        int tIndex = value.indexOf('T');
-        if (tIndex > 0) {
-            text = value.substring(0, tIndex);
-        } else if (value.length() > 10) {
-            text = value.substring(0, 10);
+        int mask = 0;
+        for (ScheduleEvent event : list) {
+            mask |= typeToMask(event.type);
+            if (mask == (DOT_LECTURE | DOT_PRACTICE | DOT_EXAM)) {
+                break;
+            }
         }
-        try {
-            return LocalDate.parse(text);
-        } catch (Exception e) {
-            return null;
-        }
+        return mask;
     }
 
-    private LocalTime parseEventStart(ScheduleEvent event) {
-        LocalTime parsed = parseTime(event.startTime);
-        if (parsed != null) {
-            return parsed;
-        }
-        int lesson = Math.max(1, event.lessonNumber);
-        int hour = 8 + (lesson - 1);
-        return LocalTime.of(Math.min(23, hour), 0);
-    }
-
-    private LocalTime parseTime(String value) {
+    private int typeToMask(String value) {
         if (value == null || value.trim().isEmpty()) {
-            return null;
+            return DOT_LECTURE;
         }
-        String text = value.trim();
-        int tIndex = text.indexOf('T');
-        if (tIndex >= 0) {
-            text = text.substring(tIndex + 1);
+        String type = value.trim().toLowerCase(Locale.US);
+        if ("lecture".equals(type)) {
+            return DOT_LECTURE;
         }
-        int dotIndex = text.indexOf('.');
-        if (dotIndex > 0) {
-            text = text.substring(0, dotIndex);
+        if ("practice".equals(type)) {
+            return DOT_PRACTICE;
         }
-        if (text.length() > 5) {
-            text = text.substring(0, 5);
+        if ("exam".equals(type)) {
+            return DOT_EXAM;
         }
-        try {
-            return LocalTime.parse(text);
-        } catch (Exception e) {
-            return null;
+        return DOT_LECTURE;
+    }
+
+    private void updateViewToggle() {
+        boolean monthSelected = showMonthView;
+        btnCalendarMode.setBackgroundResource(monthSelected ? R.drawable.bg_schedule_segmented_active : android.R.color.transparent);
+        btnListMode.setBackgroundResource(monthSelected ? android.R.color.transparent : R.drawable.bg_schedule_segmented_active);
+
+        int activeColor = getColor(R.color.schedule_accent);
+        int inactiveColor = getColor(R.color.schedule_muted);
+        btnCalendarMode.setColorFilter(monthSelected ? activeColor : inactiveColor);
+        btnListMode.setColorFilter(monthSelected ? inactiveColor : activeColor);
+    }
+
+    private void setupWeekdayLabels() {
+        TextView[] labels = new TextView[]{
+                findViewById(R.id.scheduleWeekMon),
+                findViewById(R.id.scheduleWeekTue),
+                findViewById(R.id.scheduleWeekWed),
+                findViewById(R.id.scheduleWeekThu),
+                findViewById(R.id.scheduleWeekFri),
+                findViewById(R.id.scheduleWeekSat),
+                findViewById(R.id.scheduleWeekSun)
+        };
+        DayOfWeek[] days = new DayOfWeek[]{
+                DayOfWeek.MONDAY,
+                DayOfWeek.TUESDAY,
+                DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY,
+                DayOfWeek.FRIDAY,
+                DayOfWeek.SATURDAY,
+                DayOfWeek.SUNDAY
+        };
+        for (int i = 0; i < labels.length; i++) {
+            String label = days[i].getDisplayName(TextStyle.SHORT_STANDALONE, SCHEDULE_LOCALE);
+            labels[i].setText(label.toUpperCase(SCHEDULE_LOCALE));
         }
+    }
+
+    private String formatMonthTitle(LocalDate date) {
+        return capitalizeLabel(MONTH_FORMAT.format(date));
+    }
+
+    private String formatTitle() {
+        if (showMonthView) {
+            return formatMonthTitle(currentMonth);
+        }
+        LocalDate weekStart = selectedDate.minusDays(toMondayIndex(selectedDate.getDayOfWeek()));
+        LocalDate weekEnd = weekStart.plusDays(6);
+        String startLabel = capitalizeLabel(WEEK_FORMAT.format(weekStart));
+        String endLabel = capitalizeLabel(WEEK_FORMAT.format(weekEnd));
+        return startLabel + " - " + endLabel;
+    }
+
+    private String capitalizeLabel(String label) {
+        if (label == null || label.isEmpty()) {
+            return label;
+        }
+        return label.substring(0, 1).toUpperCase(SCHEDULE_LOCALE) + label.substring(1);
     }
 }

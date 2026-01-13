@@ -49,16 +49,23 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
         if (day.selected) {
             holder.dayText.setBackgroundResource(R.drawable.bg_calendar_selected);
             holder.dayText.setTextColor(holder.itemView.getResources().getColor(R.color.schedule_text));
+        } else if (day.today) {
+            holder.dayText.setBackgroundResource(R.drawable.bg_calendar_today);
+            holder.dayText.setTextColor(holder.itemView.getResources().getColor(R.color.schedule_text));
         } else {
             holder.dayText.setBackground(null);
-            int color = day.inMonth
-                    ? holder.itemView.getResources().getColor(R.color.schedule_text)
-                    : holder.itemView.getResources().getColor(R.color.schedule_muted);
-            holder.dayText.setTextColor(color);
+            holder.dayText.setTextColor(holder.itemView.getResources().getColor(R.color.schedule_text));
         }
 
-        boolean showDot = day.hasEvents && day.inMonth && !day.selected;
-        holder.dotView.setVisibility(showDot ? View.VISIBLE : View.INVISIBLE);
+        if (!day.inMonth && !day.selected && !day.today) {
+            holder.dayText.setAlpha(0.25f);
+        } else {
+            holder.dayText.setAlpha(1f);
+        }
+
+        holder.dotLecture.setVisibility(day.inMonth && day.hasLecture ? View.VISIBLE : View.GONE);
+        holder.dotPractice.setVisibility(day.inMonth && day.hasPractice ? View.VISIBLE : View.GONE);
+        holder.dotExam.setVisibility(day.inMonth && day.hasExam ? View.VISIBLE : View.GONE);
 
         holder.itemView.setOnClickListener(v -> listener.onDayClick(day));
     }
@@ -70,12 +77,16 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView dayText;
-        private final View dotView;
+        private final View dotLecture;
+        private final View dotPractice;
+        private final View dotExam;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             dayText = itemView.findViewById(R.id.calendarDayText);
-            dotView = itemView.findViewById(R.id.calendarDayDot);
+            dotLecture = itemView.findViewById(R.id.calendarDotLecture);
+            dotPractice = itemView.findViewById(R.id.calendarDotPractice);
+            dotExam = itemView.findViewById(R.id.calendarDotExam);
         }
     }
 }

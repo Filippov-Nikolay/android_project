@@ -5,19 +5,43 @@
 
     <TextView
         android:id="@+id/calendarDayText"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
         android:layout_gravity="center"
         android:gravity="center"
         android:text="1"
         android:textColor="@color/schedule_text"
-        android:textSize="16sp" />
+        android:textSize="13sp" />
 
-    <View
-        android:id="@+id/calendarDayDot"
-        android:layout_width="4dp"
-        android:layout_height="4dp"
+    <LinearLayout
+        android:id="@+id/calendarDayDots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="6dp"
-        android:background="@color/schedule_accent" />
+        android:layout_marginBottom="4dp"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/calendarDotLecture"
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:layout_marginEnd="2dp"
+            android:background="@color/schedule_dot_lecture"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/calendarDotPractice"
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:layout_marginEnd="2dp"
+            android:background="@color/schedule_dot_practice"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/calendarDotExam"
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:background="@color/schedule_dot_exam"
+            android:visibility="gone" />
+    </LinearLayout>
 </FrameLayout>

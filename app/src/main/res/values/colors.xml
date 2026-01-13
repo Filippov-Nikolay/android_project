@@ -2,13 +2,20 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="schedule_background">#0F0F10</color>
-    <color name="schedule_surface">#1E1E22</color>
-    <color name="schedule_text">#F2F2F4</color>
-    <color name="schedule_muted">#9B9BA1</color>
-    <color name="schedule_accent">#6C63FF</color>
-    <color name="schedule_line">#2C2C31</color>
-    <color name="schedule_now">#E05A5A</color>
-    <color name="schedule_header">#151518</color>
-    <color name="schedule_handle">#6A6A70</color>
+    <color name="schedule_background">#0B1220</color>
+    <color name="schedule_surface">#111827</color>
+    <color name="schedule_surface_muted">#1F2937</color>
+    <color name="schedule_text">#E2E8F0</color>
+    <color name="schedule_muted">#94A3B8</color>
+    <color name="schedule_accent">#38BDF8</color>
+    <color name="schedule_line">#1F2937</color>
+    <color name="schedule_now">#38BDF8</color>
+    <color name="schedule_header">#111827</color>
+    <color name="schedule_handle">#94A3B8</color>
+    <color name="schedule_dot_lecture">#3B82F6</color>
+    <color name="schedule_dot_practice">#22C55E</color>
+    <color name="schedule_dot_exam">#F43F5E</color>
+    <color name="schedule_type_lecture">#4DABF7</color>
+    <color name="schedule_type_practice">#51CF66</color>
+    <color name="schedule_type_exam">#FF6B6B</color>
 </resources>
