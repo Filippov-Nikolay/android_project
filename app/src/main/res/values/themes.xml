@@ -17,7 +17,12 @@
         <item name="colorOnPrimary">@color/schedule_background</item>
         <item name="colorSecondary">@color/schedule_surface_muted</item>
         <item name="colorOnSecondary">@color/schedule_text</item>
+        <item name="editTextStyle">@style/OnlineDiary.EditText</item>
     </style>
 
     <style name="Theme.OnlineDiary" parent="Base.Theme.OnlineDiary" />
+
+    <style name="OnlineDiary.EditText" parent="@style/Widget.AppCompat.EditText">
+        <item name="android:textCursorDrawable">@drawable/cursor_accent</item>
+    </style>
 </resources>
