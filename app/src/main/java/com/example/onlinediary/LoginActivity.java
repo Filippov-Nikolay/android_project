@@ -15,6 +15,7 @@ import com.example.onlinediary.model.LoginRequest;
 import com.example.onlinediary.model.LoginResponse;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
+import com.example.onlinediary.util.ThemeHelper;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,6 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        ThemeHelper.applySystemBars(this);
 
         authStore = new AuthStore(this);
         apiService = ApiClient.getService(this);

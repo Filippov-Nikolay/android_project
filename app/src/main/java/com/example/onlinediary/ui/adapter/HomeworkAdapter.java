@@ -116,10 +116,14 @@ public class HomeworkAdapter extends RecyclerView.Adapter<HomeworkAdapter.ViewHo
         String url = buildIconUrl(iconFileName, fileName);
         if (url == null) {
             imageView.setImageResource(android.R.drawable.ic_menu_gallery);
-            imageView.setColorFilter(ContextCompat.getColor(imageView.getContext(), R.color.schedule_muted));
+            imageView.setImageTintList(ContextCompat.getColorStateList(
+                    imageView.getContext(),
+                    R.color.schedule_muted
+            ));
             return;
         }
         imageView.setColorFilter(null);
+        imageView.setImageTintList(null);
         Glide.with(imageView.getContext())
                 .load(buildGlideModel(imageView.getContext(), url))
                 .placeholder(android.R.drawable.ic_menu_gallery)

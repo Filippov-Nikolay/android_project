@@ -3,7 +3,6 @@ package com.example.onlinediary;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +24,7 @@ import com.example.onlinediary.ui.adapter.SubmissionAdapter;
 import com.example.onlinediary.util.ApiUrls;
 import com.example.onlinediary.util.FileDownloadHelper;
 import com.example.onlinediary.util.SimpleTextWatcher;
+import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,15 +48,7 @@ public class SubmissionsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submissions);
-
-        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
-        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
-        int flags = getWindow().getDecorView().getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-        }
-        getWindow().getDecorView().setSystemUiVisibility(flags);
+        TopHeaderHelper.bind(this);
 
         progressBar = findViewById(R.id.submissionsProgress);
         searchInput = findViewById(R.id.inputSubmissionSearch);

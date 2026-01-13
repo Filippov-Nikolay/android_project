@@ -4,10 +4,15 @@
     android:layout_height="match_parent"
     android:background="@color/schedule_background">
 
+    <include
+        layout="@layout/view_top_header"
+        android:layout_gravity="top" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="@dimen/top_header_content_padding">
 
         <LinearLayout
             android:id="@+id/scheduleHeader"

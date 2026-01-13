@@ -1,22 +1,14 @@
 package com.example.onlinediary;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,15 +17,14 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.widget.PopupWindowCompat;
 
 import com.bumptech.glide.Glide;
-import com.example.onlinediary.core.AuthStore;
 import com.example.onlinediary.model.PasswordUpdateRequest;
 import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.util.MultipartUtils;
+import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.io.IOException;
 
@@ -56,16 +47,7 @@ public class ProfileActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private Uri selectedAvatar;
     private ApiService apiService;
-    private AuthStore authStore;
     private User currentUser;
-
-    private TextView headerAvatar;
-    private View headerMenuButton;
-    private PopupWindow headerMenu;
-    private TextView menuAvatar;
-    private TextView menuName;
-    private TextView menuEmail;
-    private TextView menuGroup;
 
     private final ActivityResultLauncher<String> avatarPicker = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -81,16 +63,7 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-
-        authStore = new AuthStore(this);
-        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
-        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
-        int flags = getWindow().getDecorView().getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-        }
-        getWindow().getDecorView().setSystemUiVisibility(flags);
+        TopHeaderHelper.bind(this);
 
         apiService = ApiClient.getService(this);
 
@@ -104,8 +77,6 @@ public class ProfileActivity extends AppCompatActivity {
         editPassword = findViewById(R.id.editPassword);
         editPasswordConfirm = findViewById(R.id.editPasswordConfirm);
         progressBar = findViewById(R.id.profileProgress);
-        headerAvatar = findViewById(R.id.profileHeaderAvatar);
-        headerMenuButton = findViewById(R.id.profileHeaderMenu);
 
         Button btnPickAvatar = findViewById(R.id.btnPickAvatar);
         Button btnUploadAvatar = findViewById(R.id.btnUploadAvatar);
@@ -114,7 +85,6 @@ public class ProfileActivity extends AppCompatActivity {
         btnPickAvatar.setOnClickListener(v -> avatarPicker.launch("image/*"));
         btnUploadAvatar.setOnClickListener(v -> uploadAvatar());
         btnUpdatePassword.setOnClickListener(v -> updatePassword());
-        headerMenuButton.setOnClickListener(v -> showHeaderMenu());
 
         loadProfile();
     }
@@ -148,7 +118,7 @@ public class ProfileActivity extends AppCompatActivity {
         profileName.setText(name.isEmpty() ? "User" : name);
         profileEmail.setText(safe(user.email, "--"));
         profileLogin.setText(safe(user.login, "--"));
-        headerAvatar.setText(buildInitials(first, last));
+        TopHeaderHelper.updateHeaderUser(this, user);
 
         String role = safe(user.role).toUpperCase();
         if (role.isEmpty()) {
@@ -185,7 +155,6 @@ public class ProfileActivity extends AppCompatActivity {
             setAvatarPlaceholder();
         }
 
-        updateHeaderMenu(user);
     }
 
     private void uploadAvatar() {
@@ -262,62 +231,6 @@ public class ProfileActivity extends AppCompatActivity {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 
-    private void showHeaderMenu() {
-        if (headerMenu == null) {
-            View menuView = LayoutInflater.from(this)
-                    .inflate(R.layout.view_profile_header_menu, null);
-            menuAvatar = menuView.findViewById(R.id.menuAvatar);
-            menuName = menuView.findViewById(R.id.menuName);
-            menuEmail = menuView.findViewById(R.id.menuEmail);
-            menuGroup = menuView.findViewById(R.id.menuGroup);
-
-            View profileAction = menuView.findViewById(R.id.menuProfileAction);
-            View logoutAction = menuView.findViewById(R.id.menuLogoutAction);
-            profileAction.setOnClickListener(v -> headerMenu.dismiss());
-            logoutAction.setOnClickListener(v -> {
-                headerMenu.dismiss();
-                performLogout();
-            });
-
-            headerMenu = new PopupWindow(
-                    menuView,
-                    dpToPx(240),
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    true
-            );
-            headerMenu.setOutsideTouchable(true);
-            headerMenu.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            headerMenu.setElevation(dpToPx(8));
-        }
-
-        updateHeaderMenu(currentUser);
-        PopupWindowCompat.showAsDropDown(
-                headerMenu,
-                headerMenuButton,
-                0,
-                dpToPx(8),
-                Gravity.END
-        );
-    }
-
-    private void updateHeaderMenu(User user) {
-        if (user == null || menuName == null) {
-            return;
-        }
-        String first = safe(user.firstName);
-        String last = safe(user.lastName);
-        String name = (first + " " + last).trim();
-        menuName.setText(name.isEmpty() ? "User" : name);
-        menuEmail.setText(safe(user.email, "--"));
-        menuAvatar.setText(buildInitials(first, last));
-
-        if (user.groupName == null || user.groupName.trim().isEmpty()) {
-            menuGroup.setVisibility(View.GONE);
-        } else {
-            menuGroup.setVisibility(View.VISIBLE);
-            menuGroup.setText(user.groupName.trim());
-        }
-    }
 
     private void applyRoleBadge(String role) {
         if ("TEACHER".equals(role)) {
@@ -344,32 +257,9 @@ public class ProfileActivity extends AppCompatActivity {
         return trimmed.isEmpty() ? fallback : trimmed;
     }
 
-    private String buildInitials(String first, String last) {
-        StringBuilder builder = new StringBuilder();
-        if (first != null && !first.isEmpty()) {
-            builder.append(first.substring(0, 1));
-        }
-        if (last != null && !last.isEmpty()) {
-            builder.append(last.substring(0, 1));
-        }
-        String initials = builder.toString().toUpperCase();
-        return initials.isEmpty() ? "JB" : initials;
-    }
-
     private void setAvatarPlaceholder() {
         avatarImage.setImageResource(android.R.drawable.ic_menu_camera);
         avatarImage.setColorFilter(ContextCompat.getColor(this, R.color.schedule_muted));
     }
 
-    private void performLogout() {
-        authStore.clear();
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
-
-    private int dpToPx(int dp) {
-        return Math.round(dp * getResources().getDisplayMetrics().density);
-    }
 }

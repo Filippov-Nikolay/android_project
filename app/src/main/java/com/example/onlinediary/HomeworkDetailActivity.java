@@ -1,7 +1,6 @@
 package com.example.onlinediary;
 
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +22,7 @@ import com.example.onlinediary.util.ApiUrls;
 import com.example.onlinediary.util.FileDownloadHelper;
 import com.example.onlinediary.util.FileUtils;
 import com.example.onlinediary.util.MultipartUtils;
+import com.example.onlinediary.util.TopHeaderHelper;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -63,15 +63,7 @@ public class HomeworkDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homework_detail);
-
-        getWindow().setStatusBarColor(getColor(R.color.schedule_background));
-        getWindow().setNavigationBarColor(getColor(R.color.schedule_background));
-        int flags = getWindow().getDecorView().getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-        }
-        getWindow().getDecorView().setSystemUiVisibility(flags);
+        TopHeaderHelper.bind(this);
 
         apiService = ApiClient.getService(this);
         progressBar = findViewById(R.id.homeworkDetailProgress);
