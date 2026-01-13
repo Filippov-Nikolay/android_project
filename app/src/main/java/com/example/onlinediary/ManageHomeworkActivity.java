@@ -16,6 +16,7 @@ import com.example.onlinediary.model.TeacherTask;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.TeacherTaskAdapter;
+import com.example.onlinediary.util.BottomNavHelper;
 
 import java.util.List;
 
@@ -79,6 +80,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
         });
 
         apiService = ApiClient.getService(this);
+        BottomNavHelper.setupTeacherNav(this, R.id.navTeacherHomework);
     }
 
     @Override

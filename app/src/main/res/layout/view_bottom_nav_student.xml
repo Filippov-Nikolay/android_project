@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/studentBottomNav"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:layout_margin="12dp"
+    app:cardBackgroundColor="@color/schedule_surface"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="12dp"
+    app:strokeColor="@color/schedule_line"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/navStudentDashboard"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <View
+                android:id="@+id/navStudentDashboardIndicator"
+                android:layout_width="26dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@color/schedule_accent"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/navStudentDashboardIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Home"
+                android:src="@android:drawable/ic_menu_view"
+                android:tint="@color/schedule_muted" />
+
+            <TextView
+                android:id="@+id/navStudentDashboardLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Home"
+                android:textColor="@color/schedule_muted"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navStudentHomework"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <View
+                android:id="@+id/navStudentHomeworkIndicator"
+                android:layout_width="26dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@color/schedule_accent"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/navStudentHomeworkIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Homework"
+                android:src="@android:drawable/ic_menu_agenda"
+                android:tint="@color/schedule_muted" />
+
+            <TextView
+                android:id="@+id/navStudentHomeworkLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Homework"
+                android:textColor="@color/schedule_muted"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navStudentSchedule"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <View
+                android:id="@+id/navStudentScheduleIndicator"
+                android:layout_width="26dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@color/schedule_accent"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/navStudentScheduleIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Schedule"
+                android:src="@android:drawable/ic_menu_my_calendar"
+                android:tint="@color/schedule_muted" />
+
+            <TextView
+                android:id="@+id/navStudentScheduleLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Schedule"
+                android:textColor="@color/schedule_muted"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

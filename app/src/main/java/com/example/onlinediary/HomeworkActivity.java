@@ -18,6 +18,7 @@ import com.example.onlinediary.model.HomeworkItem;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.HomeworkAdapter;
+import com.example.onlinediary.util.BottomNavHelper;
 import com.example.onlinediary.util.SimpleItemSelectedListener;
 import com.google.gson.Gson;
 
@@ -92,6 +93,7 @@ public class HomeworkActivity extends AppCompatActivity {
         apiService = ApiClient.getService(this);
         setupSubjectFilter();
         updateTabs();
+        BottomNavHelper.setupStudentNav(this, R.id.navStudentHomework);
     }
 
     @Override

@@ -17,6 +17,7 @@ import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.AdminRecentUserAdapter;
+import com.example.onlinediary.util.BottomNavHelper;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -65,6 +66,7 @@ public class AdminStatsActivity extends AppCompatActivity {
         recentList.setAdapter(adapter);
 
         apiService = ApiClient.getService(this);
+        BottomNavHelper.setupAdminNav(this, R.id.navAdminStats);
         loadData();
     }
 

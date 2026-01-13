@@ -24,6 +24,7 @@ import com.example.onlinediary.model.SubjectRequest;
 import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
+import com.example.onlinediary.util.BottomNavHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +113,7 @@ public class SubjectsActivity extends AppCompatActivity {
         setupCourseSpinner();
 
         apiService = ApiClient.getService(this);
+        BottomNavHelper.setupAdminNav(this, R.id.navAdminSubjects);
     }
 
     @Override

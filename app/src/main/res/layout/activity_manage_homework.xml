@@ -15,7 +15,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:paddingBottom="96dp">
 
             <TextView
                 android:id="@+id/manageHomeworkTitle"
@@ -248,6 +249,10 @@
                 android:visibility="gone" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <include
+        layout="@layout/view_bottom_nav_teacher"
+        android:layout_gravity="bottom" />
 
     <ProgressBar
         android:id="@+id/manageHomeworkProgress"

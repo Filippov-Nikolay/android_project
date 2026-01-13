@@ -20,6 +20,7 @@ import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.CalendarAdapter;
 import com.example.onlinediary.ui.model.CalendarDay;
 import com.example.onlinediary.ui.view.ScheduleTimelineLayout;
+import com.example.onlinediary.util.BottomNavHelper;
 import com.example.onlinediary.util.ScheduleTimeUtils;
 
 import java.time.DayOfWeek;
@@ -87,7 +88,28 @@ public class ScheduleActivity extends AppCompatActivity {
 
         AuthStore authStore = new AuthStore(this);
         String role = authStore.getRole() == null ? "" : authStore.getRole();
-        canSeeJournal = "TEACHER".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role);
+        boolean isTeacher = "TEACHER".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role);
+        canSeeJournal = isTeacher;
+
+        View studentNav = findViewById(R.id.studentBottomNav);
+        View teacherNav = findViewById(R.id.teacherBottomNav);
+        if (isTeacher) {
+            if (studentNav != null) {
+                studentNav.setVisibility(View.GONE);
+            }
+            if (teacherNav != null) {
+                teacherNav.setVisibility(View.VISIBLE);
+            }
+            BottomNavHelper.setupTeacherNav(this, R.id.navTeacherSchedule);
+        } else {
+            if (studentNav != null) {
+                studentNav.setVisibility(View.VISIBLE);
+            }
+            if (teacherNav != null) {
+                teacherNav.setVisibility(View.GONE);
+            }
+            BottomNavHelper.setupStudentNav(this, R.id.navStudentSchedule);
+        }
 
         currentMonth = LocalDate.now().withDayOfMonth(1);
         selectedDate = LocalDate.now();

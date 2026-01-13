@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:paddingBottom="96dp">
 
         <TextView
             android:id="@+id/usersTitle"
@@ -62,6 +63,10 @@
             android:textSize="12sp"
             android:visibility="gone" />
     </LinearLayout>
+
+    <include
+        layout="@layout/view_bottom_nav_admin"
+        android:layout_gravity="bottom" />
 
     <ProgressBar
         android:id="@+id/usersProgress"
