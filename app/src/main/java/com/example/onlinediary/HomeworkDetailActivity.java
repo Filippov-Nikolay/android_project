@@ -92,6 +92,7 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         TextView answerTitle = findViewById(R.id.detailAnswerTitle);
         View gradeContainer = findViewById(R.id.detailGradeContainer);
         View uploadSection = findViewById(R.id.homeworkUploadSection);
+        View pendingCard = findViewById(R.id.homeworkPendingCard);
 
         Button btnDownloadTeacherFile = findViewById(R.id.btnDownloadTeacherFile);
         Button btnDownloadSubmission = findViewById(R.id.btnDownloadSubmission);
@@ -155,8 +156,9 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         }
 
         String normalizedStatus = normalizeStatus(item.status);
-        boolean isPending = "pending".equals(normalizedStatus);
-        boolean isDone = "done".equals(normalizedStatus);
+        boolean hasSubmission = item.submissionFileName != null && !item.submissionFileName.trim().isEmpty();
+        boolean isDone = "done".equals(normalizedStatus) || item.grade != null;
+        boolean isPending = "pending".equals(normalizedStatus) || (!isDone && hasSubmission);
         boolean canSubmit = !isPending && !isDone;
 
         answerTitle.setText(isPending || isDone ? "Your submission" : "Your answer");
@@ -166,7 +168,11 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         commentInput.setEnabled(canSubmit);
         uploadSection.setAlpha(canSubmit ? 1f : 0.5f);
         btnSubmitHomework.setAlpha(canSubmit ? 1f : 0.6f);
-
+        btnSubmitHomework.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
+        pendingCard.setVisibility(isPending ? View.VISIBLE : View.GONE);
+        uploadSection.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
+        selectedFilesLabel.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
+        commentInput.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
         btnCancelSubmission.setVisibility(isPending ? View.VISIBLE : View.GONE);
 
         btnDownloadTeacherFile.setOnClickListener(v -> downloadFile(item.fileName));
