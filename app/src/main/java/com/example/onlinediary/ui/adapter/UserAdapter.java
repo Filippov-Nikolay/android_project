@@ -64,7 +64,19 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         boolean hasAvatar = AvatarUtils.bind(holder.avatarView, user.avatar, android.R.drawable.ic_menu_camera, placeholderTint);
         String initials = TopHeaderHelper.buildInitials(user.firstName, user.lastName, user.login);
         holder.avatarInitials.setText(initials);
-        holder.avatarInitials.setVisibility(hasAvatar ? View.GONE : View.VISIBLE);
+        holder.avatarView.setBackgroundResource(R.drawable.bg_dashboard_avatar);
+        holder.avatarInitials.setBackgroundResource(R.drawable.bg_dashboard_avatar);
+
+        if (hasAvatar) {
+            holder.avatarInitials.setVisibility(View.GONE);
+            holder.avatarView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            holder.avatarView.setColorFilter(null);
+        } else {
+            holder.avatarInitials.setVisibility(View.VISIBLE);
+            holder.avatarView.setImageDrawable(null);
+            holder.avatarView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            holder.avatarView.setColorFilter(null);
+        }
 
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(user));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(user));
