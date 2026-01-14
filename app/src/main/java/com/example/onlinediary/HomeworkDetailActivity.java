@@ -167,8 +167,8 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         commentInput.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
         btnCancelSubmission.setVisibility(isPending ? View.VISIBLE : View.GONE);
 
-        btnDownloadTeacherFile.setOnClickListener(v -> downloadFile(item.fileName));
-        btnDownloadSubmission.setOnClickListener(v -> downloadFile(item.submissionFileName));
+        btnDownloadTeacherFile.setOnClickListener(v -> prepareDownload(item.fileName));
+        btnDownloadSubmission.setOnClickListener(v -> prepareDownload(item.submissionFileName));
         btnPickFiles.setOnClickListener(v -> filePicker.launch(new String[]{"*/*"}));
         btnSubmitHomework.setOnClickListener(v -> submitHomework());
         btnCancelSubmission.setOnClickListener(v -> cancelSubmission());
@@ -176,6 +176,27 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         btnClose.setOnClickListener(v -> finish());
 
         updateSelectedFilesLabel();
+    }
+
+
+    private void prepareDownload(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AuthStore authStore = new AuthStore(this);
+        String token = "Bearer " + authStore.getToken(); // Формируем заголовок сразу
+        String fullUrl = ApiUrls.fileDownloadUrl(fileName);
+
+        android.util.Log.d("HomeworkDetail", "Downloading directly from: " + fullUrl);
+
+        // Вызываем новый прямой метод скачивания
+        FileDownloadHelper.downloadFile(
+                this,
+                apiService.downloadFileDirect(fullUrl, token),
+                fileName
+        );
     }
 
     private void updateSelectedFilesLabel() {
@@ -186,13 +207,6 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void downloadFile(String fileName) {
-        if (fileName == null || fileName.isEmpty()) {
-            return;
-        }
-        AuthStore authStore = new AuthStore(this);
-        FileDownloadHelper.downloadFile(this, ApiUrls.fileDownloadUrl(fileName), fileName, authStore.getToken());
-    }
 
     private void submitHomework() {
         String comment = commentInput.getText().toString().trim();

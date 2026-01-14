@@ -32,6 +32,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -39,6 +40,8 @@ import retrofit2.http.Part;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Streaming;
+import retrofit2.http.Url;
 
 public interface ApiService {
     @POST("api/auth/login")
@@ -73,6 +76,13 @@ public interface ApiService {
 
     @DELETE("api/auth/users/{id}")
     Call<ResponseBody> deleteUser(@Path("id") long id);
+
+    @Streaming
+    @GET
+    Call<ResponseBody> downloadFileDirect(
+            @Url String fileUrl,
+            @Header("Authorization") String token
+    );
 
     @GET("api/groups")
     Call<List<Group>> getGroups();

@@ -30,7 +30,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="Previous month"
                 android:scaleType="center"
-                android:src="@android:drawable/ic_media_previous"
+                android:src="@drawable/ic_back_arrow"
                 android:tint="@color/schedule_text" />
 
             <TextView
@@ -51,7 +51,8 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="Next month"
                 android:scaleType="center"
-                android:src="@android:drawable/ic_media_next"
+                android:src="@drawable/ic_back_arrow"
+                android:scaleX="-1"
                 android:tint="@color/schedule_text" />
 
             <View
@@ -65,28 +66,35 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_schedule_segmented"
                 android:orientation="horizontal"
-                android:padding="4dp">
+                android:gravity="center"
+                android:padding="2dp">
 
                 <ImageButton
-                    android:id="@+id/btnListMode"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Week view"
-                    android:scaleType="center"
-                    android:src="@android:drawable/ic_menu_agenda"
-                    android:tint="@color/schedule_muted" />
+                android:id="@+id/btnListMode"
+                android:layout_width="40dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_segmented_item_active"
+                android:contentDescription="Week view"
+
+                android:padding="4dp"
+                android:scaleType="fitCenter"
+
+                android:src="@android:drawable/ic_menu_agenda"
+                android:tint="@color/schedule_accent" />
 
                 <ImageButton
-                    android:id="@+id/btnCalendarMode"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="4dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Month view"
-                    android:scaleType="center"
-                    android:src="@android:drawable/ic_menu_my_calendar"
-                    android:tint="@color/schedule_muted" />
+                android:id="@+id/btnCalendarMode"
+                android:layout_width="40dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="2dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Month view"
+
+                android:padding="4dp"
+                android:scaleType="fitCenter"
+
+                android:src="@android:drawable/ic_menu_my_calendar"
+                android:tint="@color/schedule_muted" />
             </LinearLayout>
         </LinearLayout>
 

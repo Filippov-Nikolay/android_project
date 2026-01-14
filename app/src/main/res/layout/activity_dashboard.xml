@@ -99,8 +99,9 @@
                             android:background="@android:color/transparent"
                             android:contentDescription="Profile"
                             android:scaleType="center"
-                            android:src="@android:drawable/ic_media_next"
-                            android:tint="@color/schedule_muted" />
+                            android:src="@drawable/ic_back_arrow"
+                            android:tint="@color/schedule_muted"
+                            android:scaleX="-1"/>
                     </LinearLayout>
 
                     <LinearLayout

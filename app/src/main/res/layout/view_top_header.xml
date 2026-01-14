@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/topHeaderRoot"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/top_header_height"
+    android:layout_height="75dp"
+    android:fitsSystemWindows="true"
     app:cardBackgroundColor="@color/schedule_surface"
     app:cardCornerRadius="0dp"
     app:cardElevation="6dp"
@@ -34,7 +35,7 @@
                 android:background="@drawable/bg_dashboard_avatar"
                 android:gravity="center"
                 android:text="JB"
-                android:textColor="@color/schedule_accent"
+                android:textColor="@color/schedule_icon"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -71,8 +72,11 @@
             android:layout_marginStart="8dp"
             android:background="@drawable/bg_manage_action"
             android:contentDescription="Notifications"
-            android:scaleType="center"
-            android:src="@android:drawable/ic_dialog_info"
+
+            android:scaleType="fitCenter"
+            android:padding="6dp"
+
+            android:src="@android:drawable/ic_popup_reminder"
             android:tint="@color/schedule_muted" />
 
         <LinearLayout

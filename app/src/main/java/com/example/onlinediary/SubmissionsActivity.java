@@ -113,7 +113,14 @@ public class SubmissionsActivity extends AppCompatActivity {
             return;
         }
         AuthStore authStore = new AuthStore(this);
-        FileDownloadHelper.downloadFile(this, ApiUrls.fileDownloadUrl(item.fileName), item.fileName, authStore.getToken());
+        String fullUrl = ApiUrls.fileDownloadUrl(item.fileName);
+        String token = "Bearer " + authStore.getToken();
+
+        FileDownloadHelper.downloadFile(
+                this,
+                apiService.downloadFileDirect(fullUrl, token),
+                item.fileName
+        );
     }
 
     private void showGradeDialog(SubmissionItem item) {

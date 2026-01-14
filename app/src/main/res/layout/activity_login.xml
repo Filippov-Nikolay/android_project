@@ -115,14 +115,6 @@
                             app:backgroundTint="@color/schedule_accent"
                             app:cornerRadius="14dp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
-                            android:gravity="center_horizontal"
-                            android:text="Forgot password?"
-                            android:textColor="@color/schedule_muted"
-                            android:textSize="12sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

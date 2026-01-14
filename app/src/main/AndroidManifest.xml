@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <application
         android:name=".OnlineDiaryApp"
@@ -17,63 +18,80 @@
         android:theme="@style/Theme.OnlineDiary">
         <activity
             android:name=".LoginActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".ProfileActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".DashboardActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".ScheduleActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".HomeworkActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".HomeworkDetailActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".ManageHomeworkActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".HomeworkCreateActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".SubmissionsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".UsersActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".UserCreateActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".UserEditActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".SubjectsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".ScheduleAdminActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".AdminStatsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".ScheduleEditActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".JournalActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:exported="true"
+            android:configChanges="uiMode"
+            android:theme="@style/Theme.App.Starting"> <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
         </activity>
     </application>
 
