@@ -72,7 +72,7 @@
             android:background="@drawable/bg_manage_action"
             android:contentDescription="Notifications"
             android:scaleType="center"
-            android:src="@android:drawable/ic_dialog_info"
+            android:src="@drawable/ic_header_info"
             android:tint="@color/schedule_muted" />
 
         <LinearLayout
