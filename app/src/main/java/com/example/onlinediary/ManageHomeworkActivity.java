@@ -16,6 +16,7 @@ import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.TeacherTaskAdapter;
 import com.example.onlinediary.util.BottomNavHelper;
+import com.example.onlinediary.util.DialogHelper;
 import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.util.List;
@@ -62,7 +63,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
 
             @Override
             public void onDelete(TeacherTask task) {
-                deleteTask(task.id);
+                confirmDeleteTask(task);
             }
         });
         tasksList.setAdapter(adapter);
@@ -105,6 +106,23 @@ public class ManageHomeworkActivity extends AppCompatActivity {
                 toggleEmpty(true);
             }
         });
+    }
+
+    private void confirmDeleteTask(TeacherTask task) {
+        if (task == null) {
+            return;
+        }
+        String label = task == null || task.title == null || task.title.trim().isEmpty()
+                ? "this homework"
+                : "\"" + task.title.trim() + "\"";
+        DialogHelper.showConfirm(
+                this,
+                "Delete homework",
+                "Are you sure you want to delete " + label + "?",
+                "Delete",
+                "Cancel",
+                () -> deleteTask(task.id)
+        );
     }
 
     private void deleteTask(long id) {

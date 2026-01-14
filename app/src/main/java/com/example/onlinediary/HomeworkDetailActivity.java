@@ -23,6 +23,7 @@ import com.example.onlinediary.util.FileDownloadHelper;
 import com.example.onlinediary.util.FileUtils;
 import com.example.onlinediary.util.MultipartUtils;
 import com.example.onlinediary.util.TopHeaderHelper;
+import com.example.onlinediary.util.DialogHelper;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -171,7 +172,7 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         btnDownloadSubmission.setOnClickListener(v -> downloadFile(item.submissionFileName));
         btnPickFiles.setOnClickListener(v -> filePicker.launch(new String[]{"*/*"}));
         btnSubmitHomework.setOnClickListener(v -> submitHomework());
-        btnCancelSubmission.setOnClickListener(v -> cancelSubmission());
+        btnCancelSubmission.setOnClickListener(v -> showCancelSubmissionConfirm());
         btnBackToList.setOnClickListener(v -> finish());
         btnClose.setOnClickListener(v -> finish());
 
@@ -232,6 +233,17 @@ public class HomeworkDetailActivity extends AppCompatActivity {
                 Toast.makeText(HomeworkDetailActivity.this, "Network error", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showCancelSubmissionConfirm() {
+        DialogHelper.showConfirm(
+                this,
+                "Cancel submission",
+                "Are you sure you want to delete your submission?",
+                "Yes, delete",
+                "No",
+                this::cancelSubmission
+        );
     }
 
     private void cancelSubmission() {

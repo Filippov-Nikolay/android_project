@@ -23,6 +23,7 @@ import com.example.onlinediary.model.ScheduleEvent;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.ScheduleAdminAdapter;
+import com.example.onlinediary.util.DialogHelper;
 import com.example.onlinediary.util.MultipartUtils;
 import com.example.onlinediary.util.SimpleItemSelectedListener;
 import com.example.onlinediary.util.SimpleTextWatcher;
@@ -89,7 +90,7 @@ public class ScheduleAdminActivity extends AppCompatActivity {
 
             @Override
             public void onDelete(ScheduleEvent event) {
-                deleteSchedule(event.id);
+                confirmDeleteSchedule(event);
             }
         });
         recyclerView.setAdapter(adapter);
@@ -132,6 +133,21 @@ public class ScheduleAdminActivity extends AppCompatActivity {
         });
     }
 
+    private void confirmDeleteSchedule(ScheduleEvent event) {
+        if (event == null) {
+            return;
+        }
+        String label = buildScheduleLabel(event);
+        DialogHelper.showConfirm(
+                this,
+                "Delete lesson",
+                "Are you sure you want to delete " + label + "?",
+                "Delete",
+                "Cancel",
+                () -> deleteSchedule(event.id)
+        );
+    }
+
     private void deleteSchedule(long id) {
         setLoading(true);
         apiService.deleteSchedule(id).enqueue(new Callback<ResponseBody>() {
@@ -151,6 +167,25 @@ public class ScheduleAdminActivity extends AppCompatActivity {
                 Toast.makeText(ScheduleAdminActivity.this, "Network error", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private String buildScheduleLabel(ScheduleEvent event) {
+        if (event == null) {
+            return "this lesson";
+        }
+        String subject = event.subjectName == null ? "" : event.subjectName.trim();
+        String group = event.groupName == null ? "" : event.groupName.trim();
+        StringBuilder label = new StringBuilder();
+        if (!subject.isEmpty()) {
+            label.append("\"").append(subject).append("\"");
+        }
+        if (!group.isEmpty()) {
+            if (label.length() > 0) {
+                label.append(" for ");
+            }
+            label.append(group);
+        }
+        return label.length() == 0 ? "this lesson" : label.toString();
     }
 
     private void importSchedule(Uri uri) {

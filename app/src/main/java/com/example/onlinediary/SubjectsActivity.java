@@ -1,6 +1,5 @@
 package com.example.onlinediary;
 
-import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
@@ -24,6 +23,7 @@ import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.util.BottomNavHelper;
+import com.example.onlinediary.util.DialogHelper;
 import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.util.ArrayList;
@@ -466,20 +466,36 @@ public class SubjectsActivity extends AppCompatActivity {
     }
 
     private void confirmDeleteGroup(Group group) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete group")
-                .setMessage("Are you sure you want to delete " + group.name + "?")
-                .setPositiveButton("Delete", (dialog, which) -> deleteGroup(group.id))
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .show();
+        if (group == null) {
+            return;
+        }
+        String label = group == null || group.name == null || group.name.trim().isEmpty()
+                ? "this group"
+                : "\"" + group.name.trim() + "\"";
+        DialogHelper.showConfirm(
+                this,
+                "Delete group",
+                "Are you sure you want to delete " + label + "?",
+                "Delete",
+                "Cancel",
+                () -> deleteGroup(group.id)
+        );
     }
 
     private void confirmDeleteSubject(Subject subject) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete subject")
-                .setMessage("Are you sure you want to delete " + subject.name + "?")
-                .setPositiveButton("Delete", (dialog, which) -> deleteSubject(subject.id))
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .show();
+        if (subject == null) {
+            return;
+        }
+        String label = subject == null || subject.name == null || subject.name.trim().isEmpty()
+                ? "this subject"
+                : "\"" + subject.name.trim() + "\"";
+        DialogHelper.showConfirm(
+                this,
+                "Delete subject",
+                "Are you sure you want to delete " + label + "?",
+                "Delete",
+                "Cancel",
+                () -> deleteSubject(subject.id)
+        );
     }
 }

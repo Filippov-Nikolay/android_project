@@ -16,6 +16,7 @@ import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
 import com.example.onlinediary.ui.adapter.UserAdapter;
 import com.example.onlinediary.util.BottomNavHelper;
+import com.example.onlinediary.util.DialogHelper;
 import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.util.List;
@@ -54,7 +55,7 @@ public class UsersActivity extends AppCompatActivity {
 
             @Override
             public void onDelete(User user) {
-                deleteUser(user.id);
+                confirmDeleteUser(user);
             }
         });
         usersList.setAdapter(adapter);
@@ -123,5 +124,33 @@ public class UsersActivity extends AppCompatActivity {
     private void toggleEmpty(boolean isEmpty) {
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         usersList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    private void confirmDeleteUser(User user) {
+        if (user == null) {
+            return;
+        }
+        String name = buildUserLabel(user);
+        DialogHelper.showConfirm(
+                this,
+                "Delete user",
+                "Are you sure you want to delete " + name + "?",
+                "Delete",
+                "Cancel",
+                () -> deleteUser(user.id)
+        );
+    }
+
+    private String buildUserLabel(User user) {
+        String first = user.firstName == null ? "" : user.firstName.trim();
+        String last = user.lastName == null ? "" : user.lastName.trim();
+        String fullName = (first + " " + last).trim();
+        if (!fullName.isEmpty()) {
+            return "\"" + fullName + "\"";
+        }
+        if (user.login != null && !user.login.trim().isEmpty()) {
+            return "@" + user.login.trim();
+        }
+        return "this user";
     }
 }
