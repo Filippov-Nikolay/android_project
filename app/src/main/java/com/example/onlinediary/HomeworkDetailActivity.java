@@ -63,13 +63,20 @@ public class HomeworkDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         setContentView(R.layout.activity_homework_detail);
+
 
         apiService = ApiClient.getService(this);
         progressBar = findViewById(R.id.homeworkDetailProgress);
         selectedFilesLabel = findViewById(R.id.selectedFilesLabel);
         commentInput = findViewById(R.id.editComment);
 
+        // Привязка UI элементов
         TextView subjectText = findViewById(R.id.detailSubject);
         TextView titleText = findViewById(R.id.detailTitle);
         TextView statusText = findViewById(R.id.detailStatus);
@@ -95,6 +102,7 @@ public class HomeworkDetailActivity extends AppCompatActivity {
 
         View btnClose = findViewById(R.id.btnHomeworkDetailClose);
 
+        // Получение данных
         String json = getIntent().getStringExtra("homeworkJson");
         if (json == null) {
             Toast.makeText(this, "Missing homework data", Toast.LENGTH_SHORT).show();
@@ -104,6 +112,7 @@ public class HomeworkDetailActivity extends AppCompatActivity {
 
         item = gson.fromJson(json, HomeworkItem.class);
 
+        // Заполнение данных
         subjectText.setText(safeUpper(item.subjectName, "SUBJECT"));
         titleText.setText(safe(item.title, "Homework"));
 
@@ -121,15 +130,16 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         deadlineText.setText(dateOnly(item.deadline));
         applyRemainingTag(remainingTag, item);
 
-        String description = safe(item.description, "No description.");
-        descriptionText.setText(description);
+        descriptionText.setText(safe(item.description, "No description."));
 
+        // Логика оценок
         if (item.grade != null) {
             gradeContainer.setVisibility(View.VISIBLE);
             String gradeText = item.pointsMax > 0
                     ? item.grade + "/" + item.pointsMax
                     : String.valueOf(item.grade);
             gradeBadge.setText(gradeText);
+
             if (item.feedback != null && !item.feedback.trim().isEmpty()) {
                 feedbackText.setText(item.feedback);
                 feedbackText.setVisibility(View.VISIBLE);
@@ -140,13 +150,11 @@ public class HomeworkDetailActivity extends AppCompatActivity {
             gradeContainer.setVisibility(View.GONE);
         }
 
-        if (item.fileName == null || item.fileName.isEmpty()) {
-            btnDownloadTeacherFile.setVisibility(View.GONE);
-        }
-        if (item.submissionFileName == null || item.submissionFileName.isEmpty()) {
-            btnDownloadSubmission.setVisibility(View.GONE);
-        }
+        // Видимость кнопок скачивания
+        btnDownloadTeacherFile.setVisibility((item.fileName == null || item.fileName.isEmpty()) ? View.GONE : View.VISIBLE);
+        btnDownloadSubmission.setVisibility((item.submissionFileName == null || item.submissionFileName.isEmpty()) ? View.GONE : View.VISIBLE);
 
+        // Состояние отправки
         String normalizedStatus = normalizeStatus(item.status);
         boolean hasSubmission = item.submissionFileName != null && !item.submissionFileName.trim().isEmpty();
         boolean isDone = "done".equals(normalizedStatus) || item.grade != null;
@@ -155,48 +163,43 @@ public class HomeworkDetailActivity extends AppCompatActivity {
 
         answerTitle.setText(isPending || isDone ? "Your submission" : "Your answer");
 
+        // Настройка доступности UI
         btnPickFiles.setEnabled(canSubmit);
         btnSubmitHomework.setEnabled(canSubmit);
         commentInput.setEnabled(canSubmit);
+
         uploadSection.setAlpha(canSubmit ? 1f : 0.5f);
-        btnSubmitHomework.setAlpha(canSubmit ? 1f : 0.6f);
         btnSubmitHomework.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
         pendingCard.setVisibility(isPending ? View.VISIBLE : View.GONE);
+
         uploadSection.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
         selectedFilesLabel.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
         commentInput.setVisibility(canSubmit ? View.VISIBLE : View.GONE);
         btnCancelSubmission.setVisibility(isPending ? View.VISIBLE : View.GONE);
 
+        // Слушатели
         btnDownloadTeacherFile.setOnClickListener(v -> prepareDownload(item.fileName));
         btnDownloadSubmission.setOnClickListener(v -> prepareDownload(item.submissionFileName));
         btnPickFiles.setOnClickListener(v -> filePicker.launch(new String[]{"*/*"}));
         btnSubmitHomework.setOnClickListener(v -> submitHomework());
         btnCancelSubmission.setOnClickListener(v -> showCancelSubmissionConfirm());
+
         btnBackToList.setOnClickListener(v -> finish());
         btnClose.setOnClickListener(v -> finish());
 
         updateSelectedFilesLabel();
     }
 
-
     private void prepareDownload(String fileName) {
-        if (fileName == null || fileName.isEmpty()) {
-            Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
+        if (fileName == null || fileName.isEmpty() || fileName.equals("null")) {
+            Toast.makeText(this, "File not found on server", Toast.LENGTH_SHORT).show();
             return;
         }
-
         AuthStore authStore = new AuthStore(this);
-        String token = "Bearer " + authStore.getToken(); // Формируем заголовок сразу
+        String token = "Bearer " + authStore.getToken();
         String fullUrl = ApiUrls.fileDownloadUrl(fileName);
 
-        android.util.Log.d("HomeworkDetail", "Downloading directly from: " + fullUrl);
-
-        // Вызываем новый прямой метод скачивания
-        FileDownloadHelper.downloadFile(
-                this,
-                apiService.downloadFileDirect(fullUrl, token),
-                fileName
-        );
+        FileDownloadHelper.downloadFile(this, apiService.downloadFileDirect(fullUrl, token), fileName);
     }
 
     private void updateSelectedFilesLabel() {
@@ -207,7 +210,6 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         }
     }
 
-
     private void submitHomework() {
         String comment = commentInput.getText().toString().trim();
         if (selectedFiles.isEmpty() && comment.isEmpty()) {
@@ -215,10 +217,12 @@ public class HomeworkDetailActivity extends AppCompatActivity {
             return;
         }
 
+
         List<MultipartBody.Part> parts = new ArrayList<>();
         try {
             for (Uri uri : selectedFiles) {
-                parts.add(MultipartUtils.createFilePart(this, "files", uri, "submission"));
+
+                parts.add(MultipartUtils.createFilePart(this, "file", uri, "submission"));
             }
         } catch (IOException e) {
             Toast.makeText(this, "Failed to read files", Toast.LENGTH_SHORT).show();
@@ -226,7 +230,6 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         }
 
         RequestBody commentBody = MultipartUtils.toTextBody(comment);
-
         setLoading(true);
         apiService.submitHomework(item.id, parts, commentBody).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -239,7 +242,6 @@ public class HomeworkDetailActivity extends AppCompatActivity {
                     Toast.makeText(HomeworkDetailActivity.this, "Failed to submit", Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 setLoading(false);
@@ -249,14 +251,7 @@ public class HomeworkDetailActivity extends AppCompatActivity {
     }
 
     private void showCancelSubmissionConfirm() {
-        DialogHelper.showConfirm(
-                this,
-                "Cancel submission",
-                "Are you sure you want to delete your submission?",
-                "Yes, delete",
-                "No",
-                this::cancelSubmission
-        );
+        DialogHelper.showConfirm(this, "Cancel submission", "Are you sure you want to delete your submission?", "Yes, delete", "No", this::cancelSubmission);
     }
 
     private void cancelSubmission() {
@@ -272,7 +267,6 @@ public class HomeworkDetailActivity extends AppCompatActivity {
                     Toast.makeText(HomeworkDetailActivity.this, "Failed to cancel", Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 setLoading(false);
@@ -326,19 +320,10 @@ public class HomeworkDetailActivity extends AppCompatActivity {
                     view.setBackgroundResource(R.drawable.bg_homework_remaining_overdue);
                     return;
                 }
-                if (days == 0) {
-                    label = "Due today";
-                } else if (days == 1) {
-                    label = "1 day left";
-                } else {
-                    label = days + " days left";
-                }
+                label = (days == 0) ? "Due today" : (days == 1) ? "1 day left" : days + " days left";
             }
         }
-        if (label.isEmpty()) {
-            label = "--";
-        }
-        view.setText(label);
+        view.setText(label.isEmpty() ? "--" : label);
         view.setBackgroundResource(R.drawable.bg_homework_remaining_tag);
     }
 
@@ -346,77 +331,47 @@ public class HomeworkDetailActivity extends AppCompatActivity {
         StringBuilder builder = new StringBuilder();
         int limit = Math.min(3, selectedFiles.size());
         for (int i = 0; i < limit; i++) {
-            if (builder.length() > 0) {
-                builder.append(", ");
-            }
+            if (builder.length() > 0) builder.append(", ");
             builder.append(FileUtils.getFileName(this, selectedFiles.get(i)));
         }
-        if (selectedFiles.size() > limit) {
-            builder.append(" +").append(selectedFiles.size() - limit);
-        }
+        if (selectedFiles.size() > limit) builder.append(" +").append(selectedFiles.size() - limit);
         return "Selected: " + builder;
     }
 
     private String normalizeStatus(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value.trim().toLowerCase(Locale.US);
+        return value == null ? "" : value.trim().toLowerCase(Locale.US);
     }
 
     private String safe(String value, String fallback) {
-        if (value == null) {
-            return fallback;
-        }
+        if (value == null) return fallback;
         String trimmed = value.trim();
         return trimmed.isEmpty() ? fallback : trimmed;
     }
 
     private String safeUpper(String value, String fallback) {
-        String safe = safe(value, "");
-        if (safe.isEmpty()) {
-            return fallback;
-        }
-        return safe.toUpperCase(Locale.US);
+        String safeValue = safe(value, "");
+        return safeValue.isEmpty() ? fallback : safeValue.toUpperCase(Locale.US);
     }
 
     private String dateOnly(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return "--";
-        }
+        if (value == null || value.trim().isEmpty()) return "--";
         int idx = value.indexOf('T');
         return idx > 0 ? value.substring(0, idx) : value;
     }
 
     private LocalDate parseDate(String value) {
         String date = dateOnly(value);
-        if (date.equals("--")) {
-            return null;
-        }
-        try {
-            return LocalDate.parse(date);
-        } catch (Exception ignored) {
-            return null;
-        }
+        if (date.equals("--")) return null;
+        try { return LocalDate.parse(date); } catch (Exception ignored) { return null; }
     }
 
     private String buildInitials(String name) {
-        if (name == null) {
-            return "T";
-        }
-        String trimmed = name.trim();
-        if (trimmed.isEmpty()) {
-            return "T";
-        }
-        String[] parts = trimmed.split("\\s+");
+        if (name == null || name.trim().isEmpty()) return "T";
+        String[] parts = name.trim().split("\\s+");
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
-            if (!part.isEmpty()) {
-                builder.append(part.substring(0, 1));
-            }
-            if (builder.length() >= 2) {
-                break;
-            }
+            if (!part.isEmpty()) builder.append(part.substring(0, 1));
+            if (builder.length() >= 2) break;
         }
         String initials = builder.toString().toUpperCase(Locale.US);
         return initials.isEmpty() ? "T" : initials;

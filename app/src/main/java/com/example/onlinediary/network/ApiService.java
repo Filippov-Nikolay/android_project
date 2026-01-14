@@ -170,9 +170,11 @@ public interface ApiService {
 
     @Multipart
     @POST("api/assessments/{id}/submit")
-    Call<ResponseBody> submitHomework(@Path("id") long id,
-                                      @Part List<MultipartBody.Part> files,
-                                      @Part("comment") RequestBody comment);
+    Call<ResponseBody> submitHomework(
+            @Path("id") long id,
+            @Part List<MultipartBody.Part> file,
+            @Part("comment") RequestBody comment
+    );
 
     @Multipart
     @POST("api/assessments")
