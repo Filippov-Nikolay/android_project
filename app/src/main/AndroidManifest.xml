@@ -39,7 +39,8 @@
         <activity
             android:name=".HomeworkDetailActivity"
             android:exported="false"
-            android:configChanges="uiMode"/>
+            android:configChanges="uiMode"
+            android:theme="@style/Theme.OnlineDiary.Dialog"/>
         <activity
             android:name=".ManageHomeworkActivity"
             android:exported="false"

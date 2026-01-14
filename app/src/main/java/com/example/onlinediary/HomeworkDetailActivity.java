@@ -64,7 +64,6 @@ public class HomeworkDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homework_detail);
-        TopHeaderHelper.bind(this);
 
         apiService = ApiClient.getService(this);
         progressBar = findViewById(R.id.homeworkDetailProgress);
