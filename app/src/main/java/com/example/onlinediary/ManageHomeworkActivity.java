@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.onlinediary.model.TeacherTask;
 import com.example.onlinediary.network.ApiClient;
@@ -35,6 +36,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
     private TextView statSubmittedValue;
     private TextView emptyText;
     private RecyclerView tasksList;
+    private SwipeRefreshLayout refreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +49,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
         statUpcomingValue = findViewById(R.id.manageStatUpcomingValue);
         statSubmittedValue = findViewById(R.id.manageStatSubmittedValue);
         emptyText = findViewById(R.id.manageHomeworkEmpty);
+        refreshLayout = findViewById(R.id.manageHomeworkRefresh);
 
         View btnCreate = findViewById(R.id.btnCreateHomework);
         tasksList = findViewById(R.id.teacherTasksList);
@@ -68,6 +71,10 @@ public class ManageHomeworkActivity extends AppCompatActivity {
         });
         tasksList.setAdapter(adapter);
 
+        if (refreshLayout != null) {
+            refreshLayout.setColorSchemeResources(R.color.schedule_accent);
+            refreshLayout.setOnRefreshListener(this::loadTasks);
+        }
         btnCreate.setOnClickListener(v -> {
             startActivity(new Intent(ManageHomeworkActivity.this, HomeworkCreateActivity.class));
         });
@@ -88,6 +95,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<TeacherTask>> call, Response<List<TeacherTask>> response) {
                 setLoading(false);
+                stopRefreshing();
                 if (response.isSuccessful() && response.body() != null) {
                     List<TeacherTask> tasks = response.body();
                     adapter.setItems(tasks);
@@ -102,6 +110,7 @@ public class ManageHomeworkActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<TeacherTask>> call, Throwable t) {
                 setLoading(false);
+                stopRefreshing();
                 Toast.makeText(ManageHomeworkActivity.this, "Network error", Toast.LENGTH_SHORT).show();
                 toggleEmpty(true);
             }
@@ -179,6 +188,12 @@ public class ManageHomeworkActivity extends AppCompatActivity {
     private void toggleEmpty(boolean isEmpty) {
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         tasksList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    private void stopRefreshing() {
+        if (refreshLayout != null) {
+            refreshLayout.setRefreshing(false);
+        }
     }
 
     private int getSubmittedCount(TeacherTask task) {

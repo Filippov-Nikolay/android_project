@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.onlinediary.model.HomeworkItem;
 import com.example.onlinediary.network.ApiClient;
@@ -39,6 +40,7 @@ public class HomeworkActivity extends AppCompatActivity {
     private View tabTodo;
     private View tabPending;
     private View tabDone;
+    private SwipeRefreshLayout refreshLayout;
     private final List<HomeworkItem> allItems = new ArrayList<>();
     private final Gson gson = new Gson();
     private String activeStatus = "todo";
@@ -56,6 +58,7 @@ public class HomeworkActivity extends AppCompatActivity {
         tabTodo = findViewById(R.id.btnHomeworkTabTodo);
         tabPending = findViewById(R.id.btnHomeworkTabPending);
         tabDone = findViewById(R.id.btnHomeworkTabDone);
+        refreshLayout = findViewById(R.id.homeworkRefresh);
         RecyclerView recyclerView = findViewById(R.id.homeworkList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -85,6 +88,10 @@ public class HomeworkActivity extends AppCompatActivity {
         apiService = ApiClient.getService(this);
         setupSubjectFilter();
         updateTabs();
+        if (refreshLayout != null) {
+            refreshLayout.setColorSchemeResources(R.color.schedule_accent);
+            refreshLayout.setOnRefreshListener(this::loadHomework);
+        }
         BottomNavHelper.setupStudentNav(this, R.id.navStudentHomework);
     }
 
@@ -100,6 +107,7 @@ public class HomeworkActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<HomeworkItem>> call, Response<List<HomeworkItem>> response) {
                 setLoading(false);
+                stopRefreshing();
                 if (response.isSuccessful() && response.body() != null) {
                     allItems.clear();
                     allItems.addAll(response.body());
@@ -114,6 +122,7 @@ public class HomeworkActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<HomeworkItem>> call, Throwable t) {
                 setLoading(false);
+                stopRefreshing();
                 Toast.makeText(HomeworkActivity.this, "Network error", Toast.LENGTH_SHORT).show();
                 toggleEmpty(true);
             }
@@ -221,5 +230,11 @@ public class HomeworkActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_dark, values);
         adapter.setDropDownViewResource(R.layout.item_spinner_dark_dropdown);
         return adapter;
+    }
+
+    private void stopRefreshing() {
+        if (refreshLayout != null) {
+            refreshLayout.setRefreshing(false);
+        }
     }
 }

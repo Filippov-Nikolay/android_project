@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.onlinediary.model.ScheduleEvent;
 import com.example.onlinediary.network.ApiClient;
@@ -53,6 +54,7 @@ public class ScheduleAdminActivity extends AppCompatActivity {
     private EditText searchInput;
     private Spinner groupFilter;
     private Spinner subjectFilter;
+    private SwipeRefreshLayout refreshLayout;
     private final List<ScheduleEvent> allItems = new ArrayList<>();
     private List<String> groupOptions = new ArrayList<>();
     private List<String> subjectOptions = new ArrayList<>();
@@ -74,6 +76,7 @@ public class ScheduleAdminActivity extends AppCompatActivity {
         searchInput = findViewById(R.id.inputScheduleSearch);
         groupFilter = findViewById(R.id.spinnerScheduleGroupFilter);
         subjectFilter = findViewById(R.id.spinnerScheduleSubjectFilter);
+        refreshLayout = findViewById(R.id.scheduleAdminRefresh);
         Button btnCreate = findViewById(R.id.btnCreateSchedule);
         Button btnImport = findViewById(R.id.btnImportSchedule);
         Button btnExport = findViewById(R.id.btnExportSchedule);
@@ -101,6 +104,10 @@ public class ScheduleAdminActivity extends AppCompatActivity {
 
         apiService = ApiClient.getService(this);
         setupFilters();
+        if (refreshLayout != null) {
+            refreshLayout.setColorSchemeResources(R.color.schedule_accent);
+            refreshLayout.setOnRefreshListener(this::loadSchedule);
+        }
     }
 
     @Override
@@ -115,6 +122,7 @@ public class ScheduleAdminActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<ScheduleEvent>> call, Response<List<ScheduleEvent>> response) {
                 setLoading(false);
+                stopRefreshing();
                 if (response.isSuccessful() && response.body() != null) {
                     allItems.clear();
                     allItems.addAll(response.body());
@@ -128,6 +136,7 @@ public class ScheduleAdminActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<ScheduleEvent>> call, Throwable t) {
                 setLoading(false);
+                stopRefreshing();
                 Toast.makeText(ScheduleAdminActivity.this, "Network error", Toast.LENGTH_SHORT).show();
             }
         });
@@ -253,6 +262,12 @@ public class ScheduleAdminActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void stopRefreshing() {
+        if (refreshLayout != null) {
+            refreshLayout.setRefreshing(false);
+        }
     }
 
     private void setupFilters() {

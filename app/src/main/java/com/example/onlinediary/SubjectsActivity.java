@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -59,6 +60,7 @@ public class SubjectsActivity extends AppCompatActivity {
     private EditText editSubjectDescriptionInput;
     private Subject editingSubject;
     private int pendingCalls = 0;
+    private SwipeRefreshLayout refreshLayout;
 
     private ApiService apiService;
 
@@ -86,6 +88,7 @@ public class SubjectsActivity extends AppCompatActivity {
         editCard = findViewById(R.id.subjectEditCard);
         editSubjectNameInput = findViewById(R.id.editSubjectName);
         editSubjectDescriptionInput = findViewById(R.id.editSubjectDescription);
+        refreshLayout = findViewById(R.id.subjectsRefresh);
 
         View btnCreateGroup = findViewById(R.id.btnCreateGroup);
         View btnCreateSubject = findViewById(R.id.btnCreateSubject);
@@ -102,6 +105,10 @@ public class SubjectsActivity extends AppCompatActivity {
         editCard.setOnClickListener(v -> {
         });
 
+        if (refreshLayout != null) {
+            refreshLayout.setColorSchemeResources(R.color.schedule_accent);
+            refreshLayout.setOnRefreshListener(this::loadData);
+        }
         setupCourseSpinner();
 
         apiService = ApiClient.getService(this);
@@ -430,6 +437,9 @@ public class SubjectsActivity extends AppCompatActivity {
     private void endCall() {
         pendingCalls = Math.max(0, pendingCalls - 1);
         setLoading(pendingCalls > 0);
+        if (pendingCalls == 0 && refreshLayout != null) {
+            refreshLayout.setRefreshing(false);
+        }
     }
 
     private void setupCourseSpinner() {

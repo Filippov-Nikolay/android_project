@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.onlinediary.core.AuthStore;
 import com.example.onlinediary.model.GradeRequest;
@@ -42,6 +43,7 @@ public class SubmissionsActivity extends AppCompatActivity {
     private long assessmentId;
     private EditText searchInput;
     private TextView emptyState;
+    private SwipeRefreshLayout refreshLayout;
     private final List<SubmissionItem> allItems = new ArrayList<>();
 
     @Override
@@ -53,6 +55,7 @@ public class SubmissionsActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.submissionsProgress);
         searchInput = findViewById(R.id.inputSubmissionSearch);
         emptyState = findViewById(R.id.submissionsEmpty);
+        refreshLayout = findViewById(R.id.submissionsRefresh);
         RecyclerView recyclerView = findViewById(R.id.submissionsList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -79,6 +82,10 @@ public class SubmissionsActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         apiService = ApiClient.getService(this);
+        if (refreshLayout != null) {
+            refreshLayout.setColorSchemeResources(R.color.schedule_accent);
+            refreshLayout.setOnRefreshListener(this::loadSubmissions);
+        }
         searchInput.addTextChangedListener(new SimpleTextWatcher(text -> applyFilters()));
         loadSubmissions();
     }
@@ -89,6 +96,7 @@ public class SubmissionsActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<SubmissionItem>> call, Response<List<SubmissionItem>> response) {
                 setLoading(false);
+                stopRefreshing();
                 if (response.isSuccessful() && response.body() != null) {
                     allItems.clear();
                     allItems.addAll(response.body());
@@ -102,6 +110,7 @@ public class SubmissionsActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<SubmissionItem>> call, Throwable t) {
                 setLoading(false);
+                stopRefreshing();
                 Toast.makeText(SubmissionsActivity.this, "Network error", Toast.LENGTH_SHORT).show();
                 toggleEmpty(true);
             }
@@ -212,6 +221,12 @@ public class SubmissionsActivity extends AppCompatActivity {
     private void toggleEmpty(boolean isEmpty) {
         if (emptyState != null) {
             emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void stopRefreshing() {
+        if (refreshLayout != null) {
+            refreshLayout.setRefreshing(false);
         }
     }
 }

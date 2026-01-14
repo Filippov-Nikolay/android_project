@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
@@ -32,6 +33,7 @@ public class UsersActivity extends AppCompatActivity {
     private ApiService apiService;
     private TextView emptyText;
     private RecyclerView usersList;
+    private SwipeRefreshLayout refreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +45,7 @@ public class UsersActivity extends AppCompatActivity {
         emptyText = findViewById(R.id.usersEmpty);
         View btnCreate = findViewById(R.id.btnCreateUser);
         usersList = findViewById(R.id.usersList);
+        refreshLayout = findViewById(R.id.usersRefresh);
         usersList.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new UserAdapter(new UserAdapter.UserActionListener() {
@@ -60,6 +63,10 @@ public class UsersActivity extends AppCompatActivity {
         });
         usersList.setAdapter(adapter);
 
+        if (refreshLayout != null) {
+            refreshLayout.setColorSchemeResources(R.color.schedule_accent);
+            refreshLayout.setOnRefreshListener(this::loadUsers);
+        }
         btnCreate.setOnClickListener(v -> startActivity(new Intent(UsersActivity.this, UserCreateActivity.class)));
 
         apiService = ApiClient.getService(this);
@@ -78,6 +85,7 @@ public class UsersActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 setLoading(false);
+                stopRefreshing();
                 if (response.isSuccessful() && response.body() != null) {
                     adapter.setItems(response.body());
                     toggleEmpty(response.body().isEmpty());
@@ -90,6 +98,7 @@ public class UsersActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
                 setLoading(false);
+                stopRefreshing();
                 Toast.makeText(UsersActivity.this, "Network error", Toast.LENGTH_SHORT).show();
                 toggleEmpty(true);
             }
@@ -124,6 +133,12 @@ public class UsersActivity extends AppCompatActivity {
     private void toggleEmpty(boolean isEmpty) {
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         usersList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    private void stopRefreshing() {
+        if (refreshLayout != null) {
+            refreshLayout.setRefreshing(false);
+        }
     }
 
     private void confirmDeleteUser(User user) {
