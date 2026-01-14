@@ -18,37 +18,52 @@
         android:paddingTop="@dimen/top_header_content_padding"
         android:paddingBottom="16dp">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:background="@color/white">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSubmissionsBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Back"
-                android:textAllCaps="false"
-                android:textColor="@color/schedule_text"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
                 app:backgroundTint="@color/schedule_surface_muted"
-                app:cornerRadius="12dp"
-                app:icon="@android:drawable/ic_media_previous"
+                app:cornerRadius="14dp"
+                app:icon="@drawable/ic_back_arrow"
                 app:iconGravity="textStart"
-                app:iconPadding="6dp"
-                app:iconTint="@color/schedule_text" />
+                app:iconPadding="0dp"
+                app:iconSize="24dp"
+                app:iconTint="@color/schedule_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/submissionsTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:fontFamily="sans-serif-medium"
                 android:text="Review submissions"
                 android:textColor="@color/schedule_text"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@+id/btnSubmissionsBack"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btnSubmissionsBack"
+                app:layout_constraintTop_toTopOf="@+id/btnSubmissionsBack" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -69,16 +84,21 @@
 
             <EditText
                 android:id="@+id/inputSubmissionSearch"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
+                android:layout_width="200dp"
+                android:layout_height="40dp"
                 android:background="@drawable/bg_form_input"
-                android:drawablePadding="6dp"
+
+                android:gravity="center_vertical"
+
+                android:paddingHorizontal="12dp"
+                android:drawablePadding="8dp"
                 android:drawableStart="@android:drawable/ic_menu_search"
                 android:drawableTint="@color/schedule_muted"
+
                 android:hint="Search student"
+                android:textSize="14sp"
                 android:imeOptions="actionSearch"
                 android:inputType="text"
-                android:padding="10dp"
                 android:singleLine="true"
                 android:textColor="@color/schedule_text"
                 android:textColorHint="@color/schedule_muted" />

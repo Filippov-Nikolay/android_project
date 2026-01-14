@@ -187,7 +187,8 @@
                 android:layout_height="36dp"
                 android:background="@drawable/bg_manage_action"
                 android:contentDescription="Submissions"
-                android:scaleType="center"
+                android:scaleType="fitCenter"
+                android:padding="5dp"
                 android:src="@android:drawable/ic_menu_view"
                 android:tint="@color/schedule_muted" />
 
@@ -198,7 +199,8 @@
                 android:layout_marginStart="6dp"
                 android:background="@drawable/bg_manage_action"
                 android:contentDescription="Delete"
-                android:scaleType="center"
+                android:scaleType="fitCenter"
+                android:padding="5dp"
                 android:src="@android:drawable/ic_menu_delete"
                 android:tint="@color/manage_stat_red" />
         </LinearLayout>

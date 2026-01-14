@@ -1,8 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/schedule_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+        <item name="postSplashScreenTheme">@style/Theme.OnlineDiary</item>
+    </style>
+
+    <style name="CircleImage">
+        <item name="cornerSize">50%</item>
+    </style>
+
     <style name="Base.Theme.OnlineDiary" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowBackground">@color/schedule_background</item>
-        <item name="android:windowSplashScreenBackground">@color/schedule_background</item>
         <item name="android:colorBackground">@color/schedule_background</item>
         <item name="android:textColorPrimary">@color/schedule_text</item>
         <item name="android:textColorSecondary">@color/schedule_muted</item>
@@ -10,6 +19,7 @@
         <item name="android:navigationBarColor">@color/schedule_background</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
+
         <item name="colorSurface">@color/schedule_surface</item>
         <item name="colorOnSurface">@color/schedule_text</item>
         <item name="colorPrimary">@color/schedule_accent</item>

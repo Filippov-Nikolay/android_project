@@ -3,11 +3,13 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="schedule_background">#F5F7FB</color>
+    <color name="schedule_splash_background">#121224</color>
     <color name="schedule_surface">#FFFFFF</color>
     <color name="schedule_surface_muted">#F1F5F9</color>
     <color name="schedule_text">#0F172A</color>
     <color name="schedule_muted">#64748B</color>
     <color name="schedule_accent">#38BDF8</color>
+    <color name="schedule_icon">#6266f0</color>
     <color name="schedule_line">#E2E8F0</color>
     <color name="schedule_now">#38BDF8</color>
     <color name="schedule_header">#FFFFFF</color>
