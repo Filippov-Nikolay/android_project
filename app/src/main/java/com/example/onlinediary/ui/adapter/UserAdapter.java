@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.onlinediary.R;
 import com.example.onlinediary.model.User;
+import com.example.onlinediary.util.AvatarUtils;
+import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +60,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         holder.roleText.setText(role.isEmpty() ? "USER" : role);
         applyRoleStyle(holder, role);
 
+        int placeholderTint = holder.itemView.getContext().getColor(R.color.schedule_muted);
+        boolean hasAvatar = AvatarUtils.bind(holder.avatarView, user.avatar, android.R.drawable.ic_menu_camera, placeholderTint);
+        String initials = TopHeaderHelper.buildInitials(user.firstName, user.lastName, user.login);
+        holder.avatarInitials.setText(initials);
+        holder.avatarInitials.setVisibility(hasAvatar ? View.GONE : View.VISIBLE);
+
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(user));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(user));
     }
@@ -67,6 +76,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        private final ImageView avatarView;
+        private final TextView avatarInitials;
         private final TextView nameText;
         private final TextView idText;
         private final TextView emailText;
@@ -78,6 +89,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
+            avatarView = itemView.findViewById(R.id.userAvatar);
+            avatarInitials = itemView.findViewById(R.id.userAvatarInitials);
             nameText = itemView.findViewById(R.id.userName);
             idText = itemView.findViewById(R.id.userId);
             emailText = itemView.findViewById(R.id.userEmail);

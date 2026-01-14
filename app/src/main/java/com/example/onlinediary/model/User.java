@@ -27,6 +27,7 @@ public class User {
     @SerializedName("groupName")
     public String groupName;
 
-    @SerializedName("avatarUrl")
-    public String avatarUrl;
+    // Backend returns base64 avatar string (no data: prefix)
+    @SerializedName("avatar")
+    public String avatar;
 }

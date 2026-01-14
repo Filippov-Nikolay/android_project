@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
@@ -11,29 +12,62 @@
         android:orientation="horizontal"
         android:padding="12dp">
 
-        <TextView
-            android:id="@+id/adminRecentName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1.2"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="User Name"
-            android:textColor="@color/schedule_text"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+        <FrameLayout
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="12dp">
 
-        <TextView
-            android:id="@+id/adminRecentLogin"
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/adminRecentAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_avatar_placeholder"
+                android:padding="6dp"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_camera"
+                android:tint="@color/schedule_muted"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.SmallComponent" />
+
+            <TextView
+                android:id="@+id/adminRecentInitials"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="--"
+                android:textAllCaps="true"
+                android:textColor="@color/schedule_text"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:ellipsize="end"
-            android:fontFamily="monospace"
-            android:maxLines="1"
-            android:text="@login"
-            android:textColor="@color/schedule_muted"
-            android:textSize="12sp" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/adminRecentName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="User Name"
+                android:textColor="@color/schedule_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/adminRecentLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="monospace"
+                android:maxLines="1"
+                android:text="@login"
+                android:textColor="@color/schedule_muted"
+                android:textSize="12sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/adminRecentRole"

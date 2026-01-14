@@ -59,8 +59,8 @@ public interface ApiService {
 
     @Multipart
     @POST("api/auth/register")
-    Call<User> registerUser(@PartMap Map<String, RequestBody> fields,
-                            @Part List<MultipartBody.Part> files);
+    Call<ResponseBody> registerUser(@PartMap Map<String, RequestBody> fields,
+                                    @Part MultipartBody.Part file);
 
     @GET("api/auth/users/all")
     Call<List<User>> getUsers();

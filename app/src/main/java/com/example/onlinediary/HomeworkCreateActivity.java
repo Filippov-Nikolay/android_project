@@ -196,7 +196,7 @@ public class HomeworkCreateActivity extends AppCompatActivity {
                 parts.add(MultipartUtils.createFilePart(this, "file", assignmentFile, "assessment"));
             }
             if (iconFile != null) {
-                parts.add(MultipartUtils.createFilePart(this, "icon", iconFile, "icon"));
+                parts.add(MultipartUtils.createImagePart(this, "icon", iconFile, "icon"));
             }
         } catch (IOException e) {
             Toast.makeText(this, "Failed to read files", Toast.LENGTH_SHORT).show();

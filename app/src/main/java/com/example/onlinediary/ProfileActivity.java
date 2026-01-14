@@ -1,10 +1,7 @@
 package com.example.onlinediary;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,6 +20,7 @@ import com.example.onlinediary.model.PasswordUpdateRequest;
 import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
+import com.example.onlinediary.util.AvatarUtils;
 import com.example.onlinediary.util.MultipartUtils;
 import com.example.onlinediary.util.TopHeaderHelper;
 
@@ -41,6 +39,7 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView profileEmail;
     private TextView profileLogin;
     private TextView profileGroup;
+    private TextView profileAvatarInitials;
     private View profileGroupRow;
     private EditText editPassword;
     private EditText editPasswordConfirm;
@@ -73,6 +72,7 @@ public class ProfileActivity extends AppCompatActivity {
         profileEmail = findViewById(R.id.profileEmail);
         profileLogin = findViewById(R.id.profileLogin);
         profileGroup = findViewById(R.id.profileGroup);
+        profileAvatarInitials = findViewById(R.id.profileAvatarInitials);
         profileGroupRow = findViewById(R.id.profileGroupRow);
         editPassword = findViewById(R.id.editPassword);
         editPasswordConfirm = findViewById(R.id.editPasswordConfirm);
@@ -136,24 +136,10 @@ public class ProfileActivity extends AppCompatActivity {
             profileGroup.setText(user.groupName.trim());
         }
 
-        if (user.avatarUrl != null && user.avatarUrl.startsWith("data:image")) {
-            int comma = user.avatarUrl.indexOf(',');
-            if (comma > 0) {
-                String base64 = user.avatarUrl.substring(comma + 1);
-                byte[] data = Base64.decode(base64, Base64.DEFAULT);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                avatarImage.setImageBitmap(bitmap);
-                avatarImage.setColorFilter(null);
-                return;
-            }
-        }
-
-        if (user.avatarUrl != null && !user.avatarUrl.isEmpty()) {
-            avatarImage.setColorFilter(null);
-            Glide.with(this).load(user.avatarUrl).into(avatarImage);
-        } else {
-            setAvatarPlaceholder();
-        }
+        int tint = getColor(R.color.schedule_muted);
+        boolean hasAvatar = AvatarUtils.bind(avatarImage, user.avatar, android.R.drawable.ic_menu_camera, tint);
+        profileAvatarInitials.setText(buildInitials(user));
+        profileAvatarInitials.setVisibility(hasAvatar ? View.GONE : View.VISIBLE);
 
     }
 
@@ -164,7 +150,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         try {
-            MultipartBody.Part part = MultipartUtils.createFilePart(this, "file", selectedAvatar, "avatar");
+            MultipartBody.Part part = MultipartUtils.createImagePart(this, "file", selectedAvatar, "avatar");
             setLoading(true);
             apiService.updateAvatar(part).enqueue(new Callback<ResponseBody>() {
                 @Override
@@ -260,6 +246,11 @@ public class ProfileActivity extends AppCompatActivity {
     private void setAvatarPlaceholder() {
         avatarImage.setImageResource(android.R.drawable.ic_menu_camera);
         avatarImage.setColorFilter(ContextCompat.getColor(this, R.color.schedule_muted));
+        profileAvatarInitials.setVisibility(View.VISIBLE);
+    }
+
+    private String buildInitials(User user) {
+        return TopHeaderHelper.buildInitials(user.firstName, user.lastName, user.login);
     }
 
 }

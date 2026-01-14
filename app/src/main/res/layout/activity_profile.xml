@@ -68,14 +68,30 @@
                     android:orientation="vertical"
                     android:padding="24dp">
 
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/avatarImage"
+                    <FrameLayout
                         android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:background="@color/schedule_surface_muted"
-                        android:scaleType="centerCrop"
-                        app:shapeAppearanceOverlay="@style/CircleImage"
-                        android:src="@drawable/bg_avatar_placeholder" />
+                        android:layout_height="100dp">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/avatarImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/schedule_surface_muted"
+                            android:scaleType="centerCrop"
+                            app:shapeAppearanceOverlay="@style/CircleImage"
+                            android:src="@drawable/bg_avatar_placeholder" />
+
+                        <TextView
+                            android:id="@+id/profileAvatarInitials"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="--"
+                            android:textAllCaps="true"
+                            android:textColor="@color/schedule_text"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/profileName"

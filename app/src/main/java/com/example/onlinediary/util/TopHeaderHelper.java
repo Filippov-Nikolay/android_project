@@ -129,7 +129,7 @@ public final class TopHeaderHelper {
         }
         String first = safe(user.firstName);
         String last = safe(user.lastName);
-        avatar.setText(buildInitials(first, last));
+        avatar.setText(buildInitials(first, last, user.login));
     }
 
     private static void showMenu(Activity activity, View anchor) {
@@ -200,7 +200,7 @@ public final class TopHeaderHelper {
         String first = safe(user.firstName);
         String last = safe(user.lastName);
         String name = (first + " " + last).trim();
-        menuAvatar.setText(buildInitials(first, last));
+        menuAvatar.setText(buildInitials(first, last, user.login));
         menuName.setText(name.isEmpty() ? "User" : name);
         menuEmail.setText(safe(user.email, "--"));
 
@@ -210,6 +210,22 @@ public final class TopHeaderHelper {
             menuGroup.setVisibility(View.VISIBLE);
             menuGroup.setText(user.groupName.trim());
         }
+    }
+
+    public static String buildInitials(String first, String last, String login) {
+        String base = buildInitials(first, last);
+        if (!"JB".equals(base) || (first != null && !first.isEmpty()) || (last != null && !last.isEmpty())) {
+            return base;
+        }
+        String loginClean = login == null ? "" : login.trim();
+        if (!loginClean.isEmpty()) {
+            String trimmed = loginClean.replaceAll("\\s+", "");
+            if (trimmed.length() >= 2) {
+                return trimmed.substring(0, 2).toUpperCase();
+            }
+            return trimmed.substring(0, 1).toUpperCase();
+        }
+        return base;
     }
 
     private static String buildInitials(String first, String last) {

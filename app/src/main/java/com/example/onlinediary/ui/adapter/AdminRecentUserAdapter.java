@@ -3,6 +3,7 @@ package com.example.onlinediary.ui.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -10,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.onlinediary.R;
 import com.example.onlinediary.model.User;
+import com.example.onlinediary.util.AvatarUtils;
+import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +62,12 @@ public class AdminRecentUserAdapter extends RecyclerView.Adapter<AdminRecentUser
 
         holder.roleText.setTextColor(textColor);
         holder.roleText.setBackgroundResource(bgRes);
+
+        int placeholderTint = holder.itemView.getContext().getColor(R.color.schedule_muted);
+        boolean hasAvatar = AvatarUtils.bind(holder.avatarView, user.avatar, android.R.drawable.ic_menu_camera, placeholderTint);
+        String initials = TopHeaderHelper.buildInitials(user.firstName, user.lastName, user.login);
+        holder.avatarInitials.setText(initials);
+        holder.avatarInitials.setVisibility(hasAvatar ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -67,12 +76,16 @@ public class AdminRecentUserAdapter extends RecyclerView.Adapter<AdminRecentUser
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        final ImageView avatarView;
+        final TextView avatarInitials;
         final TextView nameText;
         final TextView loginText;
         final TextView roleText;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
+            avatarView = itemView.findViewById(R.id.adminRecentAvatar);
+            avatarInitials = itemView.findViewById(R.id.adminRecentInitials);
             nameText = itemView.findViewById(R.id.adminRecentName);
             loginText = itemView.findViewById(R.id.adminRecentLogin);
             roleText = itemView.findViewById(R.id.adminRecentRole);

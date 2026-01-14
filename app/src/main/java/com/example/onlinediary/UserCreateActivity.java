@@ -26,12 +26,11 @@ import com.example.onlinediary.util.TopHeaderHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -59,6 +58,7 @@ public class UserCreateActivity extends AppCompatActivity {
                 if (uri != null) {
                     avatarPreview.setImageURI(uri);
                     avatarPreview.setColorFilter(null);
+                    avatarPreview.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     avatarLabel.setText(FileUtils.getFileName(this, uri));
                 } else {
                     resetAvatarPreview();
@@ -152,8 +152,12 @@ public class UserCreateActivity extends AppCompatActivity {
             Toast.makeText(this, "Fill required fields", Toast.LENGTH_SHORT).show();
             return;
         }
+        if ("STUDENT".equalsIgnoreCase(role) && (groups.isEmpty() || groupSpinner.getSelectedItemPosition() < 0)) {
+            Toast.makeText(this, "Select group for student", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        Map<String, RequestBody> fields = new HashMap<>();
+        java.util.Map<String, RequestBody> fields = new java.util.HashMap<>();
         fields.put("login", MultipartUtils.toTextBody(login));
         fields.put("email", MultipartUtils.toTextBody(email));
         fields.put("firstName", MultipartUtils.toTextBody(firstName));
@@ -166,10 +170,10 @@ public class UserCreateActivity extends AppCompatActivity {
             fields.put("groupId", MultipartUtils.toTextBody(String.valueOf(group.id)));
         }
 
-        List<MultipartBody.Part> parts = new ArrayList<>();
+        MultipartBody.Part avatarPart = null;
         if (avatarUri != null) {
             try {
-                parts.add(MultipartUtils.createFilePart(this, "file", avatarUri, "avatar"));
+                avatarPart = MultipartUtils.createImagePart(this, "file", avatarUri, "avatar");
             } catch (IOException e) {
                 Toast.makeText(this, "Failed to read avatar", Toast.LENGTH_SHORT).show();
                 return;
@@ -177,20 +181,20 @@ public class UserCreateActivity extends AppCompatActivity {
         }
 
         setLoading(true);
-        apiService.registerUser(fields, parts).enqueue(new Callback<User>() {
+        apiService.registerUser(fields, avatarPart).enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 setLoading(false);
                 if (response.isSuccessful()) {
                     Toast.makeText(UserCreateActivity.this, "User created", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
-                    Toast.makeText(UserCreateActivity.this, "Failed to create user", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(UserCreateActivity.this, "Failed to create user (" + response.code() + ")", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<User> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(UserCreateActivity.this, "Network error", Toast.LENGTH_SHORT).show();
             }
