@@ -13,6 +13,9 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.PopupWindowCompat;
 
 import com.example.onlinediary.AdminStatsActivity;
@@ -43,6 +46,7 @@ public final class TopHeaderHelper {
         }
 
         ThemeHelper.applySystemBars(activity);
+        applySystemBarInsets(findContentRoot(activity));
 
         View brand = activity.findViewById(R.id.headerBrand);
         ImageButton themeButton = activity.findViewById(R.id.headerThemeButton);
@@ -218,6 +222,39 @@ public final class TopHeaderHelper {
         }
         String initials = builder.toString().toUpperCase();
         return initials.isEmpty() ? "JB" : initials;
+    }
+
+    private static void applySystemBarInsets(View view) {
+        if (view == null) {
+            return;
+        }
+        final int paddingLeft = view.getPaddingLeft();
+        final int paddingTop = view.getPaddingTop();
+        final int paddingRight = view.getPaddingRight();
+        final int paddingBottom = view.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(
+                    paddingLeft + systemBars.left,
+                    paddingTop + systemBars.top,
+                    paddingRight + systemBars.right,
+                    paddingBottom + systemBars.bottom
+            );
+            return insets;
+        });
+        ViewCompat.requestApplyInsets(view);
+    }
+
+    private static View findContentRoot(Activity activity) {
+        View content = activity.findViewById(android.R.id.content);
+        if (content instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) content;
+            if (group.getChildCount() > 0) {
+                return group.getChildAt(0);
+            }
+        }
+        return content;
     }
 
     private static String safe(String value) {
