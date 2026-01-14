@@ -64,16 +64,16 @@
                         android:gravity="center_horizontal"
                         android:orientation="vertical">
 
-                        <TextView
+                        <com.google.android.material.imageview.ShapeableImageView
                             android:id="@+id/avatarPreview"
                             android:layout_width="88dp"
                             android:layout_height="88dp"
                             android:background="@drawable/bg_avatar_placeholder"
-                            android:gravity="center"
-                            android:text="?"
-                            android:textColor="@color/schedule_muted"
-                            android:textSize="28sp"
-                            android:textStyle="bold" />
+                            android:padding="18dp"
+                            android:scaleType="centerInside"
+                            android:src="@android:drawable/ic_menu_help"
+                            android:tint="@color/schedule_muted"
+                            app:shapeAppearanceOverlay="@style/CircleImage" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPickAvatar"

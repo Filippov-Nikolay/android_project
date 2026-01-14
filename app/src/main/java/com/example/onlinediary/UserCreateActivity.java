@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -18,6 +19,7 @@ import com.example.onlinediary.model.Group;
 import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
 import com.example.onlinediary.network.ApiService;
+import com.example.onlinediary.util.FileUtils;
 import com.example.onlinediary.util.MultipartUtils;
 import com.example.onlinediary.util.SimpleItemSelectedListener;
 import com.example.onlinediary.util.TopHeaderHelper;
@@ -44,6 +46,7 @@ public class UserCreateActivity extends AppCompatActivity {
     private EditText lastNameInput;
     private EditText passwordInput;
     private TextView avatarLabel;
+    private ImageView avatarPreview;
     private View groupContainer;
     private ProgressBar progressBar;
     private Uri avatarUri;
@@ -53,7 +56,14 @@ public class UserCreateActivity extends AppCompatActivity {
             new ActivityResultContracts.GetContent(),
             uri -> {
                 avatarUri = uri;
-                avatarLabel.setText(uri == null ? "No avatar selected" : "Avatar selected");
+                if (uri != null) {
+                    avatarPreview.setImageURI(uri);
+                    avatarPreview.setColorFilter(null);
+                    avatarLabel.setText(FileUtils.getFileName(this, uri));
+                } else {
+                    resetAvatarPreview();
+                    avatarLabel.setText("No avatar selected");
+                }
             }
     );
 
@@ -71,8 +81,10 @@ public class UserCreateActivity extends AppCompatActivity {
         lastNameInput = findViewById(R.id.inputUserLastName);
         passwordInput = findViewById(R.id.inputUserPassword);
         avatarLabel = findViewById(R.id.labelAvatar);
+        avatarPreview = findViewById(R.id.avatarPreview);
         groupContainer = findViewById(R.id.userGroupContainer);
         progressBar = findViewById(R.id.userCreateProgress);
+        resetAvatarPreview();
 
         ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(
                 this,
@@ -157,7 +169,7 @@ public class UserCreateActivity extends AppCompatActivity {
         List<MultipartBody.Part> parts = new ArrayList<>();
         if (avatarUri != null) {
             try {
-                parts.add(MultipartUtils.createFilePart(this, "avatar", avatarUri, "avatar"));
+                parts.add(MultipartUtils.createFilePart(this, "file", avatarUri, "avatar"));
             } catch (IOException e) {
                 Toast.makeText(this, "Failed to read avatar", Toast.LENGTH_SHORT).show();
                 return;
@@ -187,5 +199,13 @@ public class UserCreateActivity extends AppCompatActivity {
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void resetAvatarPreview() {
+        if (avatarPreview != null) {
+            avatarPreview.setImageResource(android.R.drawable.ic_menu_help);
+            avatarPreview.setColorFilter(getColor(R.color.schedule_muted));
+            avatarPreview.setBackgroundResource(R.drawable.bg_avatar_placeholder);
+        }
     }
 }
