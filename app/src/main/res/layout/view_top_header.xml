@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/topHeaderRoot"
     android:layout_width="match_parent"
-    android:layout_height="75dp"
-    android:fitsSystemWindows="true"
+    android:layout_height="60dp"
     app:cardBackgroundColor="@color/schedule_surface"
     app:cardCornerRadius="0dp"
-    app:cardElevation="6dp"
+    app:cardElevation="8dp"
     app:strokeColor="@color/schedule_line"
-    app:strokeWidth="1dp">
+    app:strokeWidth="1dp"
+    app:cardMaxElevation="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:paddingHorizontal="16dp">
 
         <LinearLayout
             android:id="@+id/headerBrand"
@@ -25,18 +25,19 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/headerBrandBadge"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:background="@drawable/bg_dashboard_avatar"
                 android:gravity="center"
                 android:text="JB"
                 android:textColor="@color/schedule_icon"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -44,10 +45,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:fontFamily="sans-serif-black"
                 android:text="JByte"
                 android:textColor="@color/schedule_text"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="18sp" />
         </LinearLayout>
 
         <View
@@ -57,56 +58,52 @@
 
         <ImageButton
             android:id="@+id/headerThemeButton"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:background="@drawable/bg_manage_action"
             android:contentDescription="Theme"
-            android:scaleType="center"
             android:src="@drawable/ic_theme_light"
-            android:tint="@color/schedule_muted" />
+            app:tint="@color/schedule_muted" />
 
         <ImageButton
             android:id="@+id/headerNotificationButton"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginStart="8dp"
             android:background="@drawable/bg_manage_action"
             android:contentDescription="Notifications"
-            android:scaleType="center"
             android:src="@drawable/ic_header_info"
-            android:tint="@color/schedule_muted" />
+            app:tint="@color/schedule_muted" />
 
         <LinearLayout
             android:id="@+id/headerMenuButton"
             android:layout_width="wrap_content"
-            android:layout_height="32dp"
+            android:layout_height="36dp"
             android:layout_marginStart="8dp"
             android:background="@drawable/bg_manage_action"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingLeft="6dp"
-            android:paddingRight="6dp">
+            android:paddingHorizontal="8dp">
 
             <TextView
                 android:id="@+id/headerAvatar"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
                 android:background="@drawable/bg_dashboard_avatar"
                 android:gravity="center"
                 android:text="JB"
                 android:textColor="@color/schedule_accent"
-                android:textSize="10sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_marginStart="4dp"
-                android:contentDescription="Menu"
                 android:src="@android:drawable/arrow_down_float"
-                android:tint="@color/schedule_muted" />
+                app:tint="@color/schedule_muted" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -1,5 +1,6 @@
 package com.example.onlinediary;
 
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -15,6 +16,12 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.onlinediary.model.Group;
 import com.example.onlinediary.model.User;
 import com.example.onlinediary.network.ApiClient;
@@ -23,6 +30,7 @@ import com.example.onlinediary.util.FileUtils;
 import com.example.onlinediary.util.MultipartUtils;
 import com.example.onlinediary.util.SimpleItemSelectedListener;
 import com.example.onlinediary.util.TopHeaderHelper;
+import com.google.android.material.imageview.ShapeableImageView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,7 +53,7 @@ public class UserCreateActivity extends AppCompatActivity {
     private EditText lastNameInput;
     private EditText passwordInput;
     private TextView avatarLabel;
-    private ImageView avatarPreview;
+    private ShapeableImageView avatarPreview;
     private View groupContainer;
     private ProgressBar progressBar;
     private Uri avatarUri;
@@ -56,10 +64,7 @@ public class UserCreateActivity extends AppCompatActivity {
             uri -> {
                 avatarUri = uri;
                 if (uri != null) {
-                    avatarPreview.setImageURI(uri);
-                    avatarPreview.setColorFilter(null);
-                    avatarPreview.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    avatarLabel.setText(FileUtils.getFileName(this, uri));
+                    bindPreview(uri);
                 } else {
                     resetAvatarPreview();
                     avatarLabel.setText("No avatar selected");
@@ -205,11 +210,45 @@ public class UserCreateActivity extends AppCompatActivity {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 
+    private void bindPreview(Uri uri) {
+        Glide.with(this).clear(avatarPreview);
+
+        avatarPreview.setImageTintList(null);
+        avatarPreview.clearColorFilter();
+        avatarPreview.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        avatarPreview.setPadding(0, 0, 0, 0);
+        avatarPreview.setBackground(null);
+
+        Glide.with(this)
+                .load(uri)
+                .transform(new CenterCrop())
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        Toast.makeText(UserCreateActivity.this, "Unable to load image preview", Toast.LENGTH_SHORT).show();
+                        avatarUri = null;
+                        resetAvatarPreview();
+                        avatarLabel.setText("No avatar selected");
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        avatarLabel.setText(FileUtils.getFileName(UserCreateActivity.this, uri));
+                        return false;
+                    }
+                })
+                .into(avatarPreview);
+    }
+
     private void resetAvatarPreview() {
         if (avatarPreview != null) {
             avatarPreview.setImageResource(android.R.drawable.ic_menu_help);
             avatarPreview.setColorFilter(getColor(R.color.schedule_muted));
             avatarPreview.setBackgroundResource(R.drawable.bg_avatar_placeholder);
+            int pad = (int) (18 * getResources().getDisplayMetrics().density);
+            avatarPreview.setPadding(pad, pad, pad, pad);
+            avatarPreview.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         }
     }
 }
